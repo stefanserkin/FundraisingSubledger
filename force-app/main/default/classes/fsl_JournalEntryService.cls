@@ -20,7 +20,6 @@ public without sharing class fsl_JournalEntryService {
     private static Map<String, String> mapGLCodeToName;
 
     private static Set<Id> setUpdatedOppIds;
-    private static List<Journal_Entry__c> lstJEsToInsert;
 
     /***************************
      * Main entry - record triggered events on opportunity, payment, and allocation
@@ -32,6 +31,8 @@ public without sharing class fsl_JournalEntryService {
         Set<Id> setOpportunityIds
     ) {
         System.debug('::::: entered main entry');
+        // List of jes to insert
+        List<Journal_Entry__c> lstJEsToInsert = new List<Journal_Entry__c>();
         // If necessary, instantiate cache variables
         initializeCache();
         // Get opportunities with details
@@ -44,27 +45,28 @@ public without sharing class fsl_JournalEntryService {
                 // zero stuff out
             } else {
                 // Find changes to gl attributions
-                System.debug(':::::: expected map: ' + mapExpectedNets);
-                System.debug(':::::: current map: ' + mapCurrentNets);
                 for (String glCode : mapExpectedNets.keySet()) {
                     Decimal expectedValue = mapExpectedNets.get(glCode);
                     Decimal currentValue = mapCurrentNets.containsKey(glCode) ? mapExpectedNets.get(glCode) : 0;
-                    System.debug(':::: expectedValue: ' + expectedValue);
-                    System.debug(':::: currentValue: ' + currentValue);
                     if (expectedValue != currentValue) {
                         Decimal delta = expectedValue - currentValue;
                         lstJEsToInsert.add( 
                             getNewJournalEntry(opp, glCode, delta)
                         );
+                        setUpdatedOppIds.add(opp.Id);
                     }
                 }
             }
             // Loop through current gls to off-set any that are not in the map of expected nets
             for (String glCode : mapCurrentNets.keySet()) {
-                if (!mapExpectedNets.containsKey(glCode)) {
+                if (
+                    !mapExpectedNets.containsKey(glCode) && 
+                    mapCurrentNets.get(glCode) != 0
+                ) {
                     lstJEsToInsert.add(
                         getNewJournalEntry(opp, glCode, (mapCurrentNets.get(glCode) * -1))
                     );
+                    setUpdatedOppIds.add(opp.Id);
                 }
             }
         }
@@ -81,8 +83,9 @@ public without sharing class fsl_JournalEntryService {
 
     private static void initializeCache() {
         if (setUpdatedOppIds == null) setUpdatedOppIds = new Set<Id>();
-        if (lstJEsToInsert == null) lstJEsToInsert = new List<Journal_Entry__c>();
         if (mapGLCodeToName == null) mapGLCodeToName = new Map<String, String>();
+        defaultPaymentAccount = getDefaultPaymentAccount();
+        defaultReceivablesAccount = getDefaultReceivablesAccount();
     }
 
     /**
@@ -105,7 +108,6 @@ public without sharing class fsl_JournalEntryService {
         je.Type__c = delta > 0 ? CREDIT_LABEL : DEBIT_LABEL;
         je.Amount__c = Math.abs(delta);
         je.Date__c = Date.today();
-        System.debug(':::: map GLs: ' + mapGLCodeToName);
         je.GL_Account_Name__c = mapGLCodeToName.get(glCode);
         je.GL_Code__c = glCode;
         je.Posting_Status__c = appSettings.Default_Journal_Entry_Posting_Status__c;
@@ -114,6 +116,8 @@ public without sharing class fsl_JournalEntryService {
 
     /**
      * Get map of expected GL net values
+     * @param Opportunity opp Opportunity with child payments and allocations
+     * @return Map<String, Decimal> Map of GL codes and expected net totals
      */
 
     private static Map<String, Decimal> getExpectedNetMap(Opportunity opp) {
@@ -127,7 +131,6 @@ public without sharing class fsl_JournalEntryService {
         // For committed and finalized opps, calculate expected net per GL
         //   from payments and allocations
         String glCode = '';
-        Decimal totalPaid = 0;
         for (npe01__OppPayment__c p : opp.npe01__OppPayment__r) {
             // Get gl code from map or set the default
             glCode = p.npe01__Payment_Method__c != null && getGlobalAccountMap().containsKey(p.npe01__Payment_Method__c)
@@ -139,8 +142,6 @@ public without sharing class fsl_JournalEntryService {
             }
             // Subtract amount of paid GL for payment accounts
             mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - p.npe01__Payment_Amount__c);
-            totalPaid += p.npe01__Payment_Amount__c;
-            System.debug(':::: subtracted ' + p.npe01__Payment_Amount__c + ' from gl: ' + glCode);
         }
         for (npsp__Allocation__c a : opp.npsp__Allocations__r) {
             glCode = a.npsp__General_Accounting_Unit__r.GL_Code__c;
@@ -151,13 +152,15 @@ public without sharing class fsl_JournalEntryService {
             // Add amount of paid GL for allocation accounts
             mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) + a.npsp__Amount__c);
             mapGLCodeToName.put(glCode, a.npsp__General_Accounting_Unit__r.Name);
-            System.debug(':::: added ' + a.npsp__Amount__c + ' to gl: ' + glCode);
         }
         // Get expected receivables amount by subtracting payments from total opp amount
-        if (strState == ACCOUNTING_STATE_COMMITTED) {
+        if (
+            strState == ACCOUNTING_STATE_COMMITTED && 
+            opp.npe01__Amount_Outstanding__c > 0
+        ) {
             mapExpectedNets.put(
                 defaultReceivablesAccount.GL_Code__c, 
-                opp.Amount - totalPaid
+                (opp.npe01__Amount_Outstanding__c * -1)
             );
         }
         return mapExpectedNets;
@@ -165,6 +168,8 @@ public without sharing class fsl_JournalEntryService {
 
     /**
      * Get map of current GL net values from journal entries
+     * @param Journal_Entry__c[] lstJEs List of journal entries to assess
+     * @return Map<String, Decimal> Map of existing GL codes to their net totals
      */
 
     private static Map<String, Decimal> getCurrentNetMap(List<Journal_Entry__c> lstJEs) {
@@ -179,7 +184,6 @@ public without sharing class fsl_JournalEntryService {
             // Positive value for credits, negative for debits
             netValue += je.Type__c == DEBIT_LABEL ? (je.Amount__c) * -1 : je.Amount__c;
             mapCurrentNets.put(glCode, netValue);
-            System.debug(':::: updated ' + glCode + ' to net value: ' + netValue);
         }
         return mapCurrentNets;
     }
@@ -203,8 +207,7 @@ public without sharing class fsl_JournalEntryService {
     }
 
     /**
-     * @return Map<String, String> map of opportunity stages to corresponding
-     *   accounting state
+     * @return Map<String, String> Map of opportunity stages to corresponding accounting state
      */
 
     public static Map<String, String> getStageToStateMappings() {
@@ -223,15 +226,15 @@ public without sharing class fsl_JournalEntryService {
 
     /**
      * @param set<Id> set of opportunity ids
-     * @return Opportunity[] opps with payments and allocations
+     * @return Opportunity[] Opps with payments and allocations
      */
 
     public static Map<Id, Opportunity> getOppsWithAccountingDetails(
         Set<Id> setOpportunityIds
     ) {
         return new Map<Id, Opportunity>([
-            SELECT Id, Amount, CloseDate, StageName, AccountId, IsWon, 
-                   (SELECT Id, npe01__Payment_Amount__c, npe01__Payment_Method__c, npe01__Paid__c 
+            SELECT Id, Amount, CloseDate, StageName, AccountId, IsWon, npe01__Amount_Outstanding__c, 
+                   (SELECT Id, npe01__Payment_Amount__c, npe01__Payment_Method__c, npe01__Paid__c
                       FROM npe01__OppPayment__r
                      WHERE npe01__Paid__c = true), 
                    (SELECT Id, npsp__Amount__c, npsp__General_Accounting_Unit__c, npsp__General_Accounting_Unit__r.Name, npsp__General_Accounting_Unit__r.GL_Code__c 
