@@ -1,4 +1,4 @@
-public with sharing class TA_Opp_CreateJournalEntriesAI implements TriggerAction.AfterInsert {
+public without sharing class TA_Opp_CreateJournalEntriesAI implements TriggerAction.AfterInsert {
 
     /**
      * Managed in sObject Trigger Settings custom metadata (Opportunity)
@@ -9,20 +9,23 @@ public with sharing class TA_Opp_CreateJournalEntriesAI implements TriggerAction
         Map<String, String> mapStageToState = fsl_JournalEntryService.getStageToStateMappings();
         Set<Id> setOppIdsWithChanges = new Set<Id>();
         for (Opportunity opp : newList) {
-            String oppStageName = mapStageToState.get(opp.StageName);
+            String strState = mapStageToState.get(opp.StageName);
             if (
-                oppStageName == fsl_JournalEntryService.ACCOUNTING_STATE_COMMITTED || 
-                oppStageName == fsl_JournalEntryService.ACCOUNTING_STATE_FINALIZED
+                strState == fsl_JournalEntryService.ACCOUNTING_STATE_COMMITTED || 
+                strState == fsl_JournalEntryService.ACCOUNTING_STATE_FINALIZED
             ) {
                 setOppIdsWithChanges.add(opp.Id);
             }
         }
         if (!setOppIdsWithChanges.isEmpty()) {
+            fsl_JournalEntryService.createEntries(setOppIdsWithChanges);
+            /*
             try {
                 fsl_JournalEntryService.createEntries(setOppIdsWithChanges);
             } catch (Exception e) {
                 System.debug(':::: An error occurred: ' + e.getMessage());
             }
+            */
         }
     }
 
