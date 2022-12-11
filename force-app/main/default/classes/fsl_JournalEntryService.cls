@@ -1,23 +1,22 @@
 public without sharing class fsl_JournalEntryService {
 
+    // Constants - common labels
     public static final String ACCOUNTING_STATE_UNCOMMITTED = 'Uncommitted';
     public static final String ACCOUNTING_STATE_COMMITTED = 'Committed';
     public static final String ACCOUNTING_STATE_FINALIZED = 'Finalized';
+    public static final String RECEIVABLES_ACCOUNT_NAME = 'Pledges_Receivable';
+    public static final String GLOBAL_GL_TYPE_RECEIVABLES = 'Receivables';
+    public static final String GLOBAL_GL_TYPE_PAYMENT = 'Payment';
+    public static final String DEBIT_LABEL = 'Debit';
+    public static final String CREDIT_LABEL = 'Credit';
 
-    // Global settings
+    // Global settings and configuration cache
     private static Fundraising_Subledger_Setting__mdt appSettings = Fundraising_Subledger_Setting__mdt.getAll().values().get(0);
-
-    // Cache configuration
     private static Accounting_Period__c openAccountingPeriod;
     private static Map<String, String> mapStageToState;
-    private static Map<String, Global_GL_Account__mdt> mapPaymentAccounts;
-    private static Global_GL_Account__mdt receivablesAccount;
-
-    // Labeling
-    private static final String GLOBAL_GL_TYPE_PAYMENT = 'Payment';
-    private static final String RECEIVABLES_ACCOUNT_NAME = 'Receivables';
-    private static final String DEBIT_LABEL = 'Debit';
-    private static final String CREDIT_LABEL = 'Credit';
+    private static Map<String, Global_GL_Account__mdt> mapLabelToGlobalAccount;
+    // private static Global_GL_Account__mdt defaultReceivablesAccount;
+    // private static Global_GL_Account__mdt defaultPaymentAccount;
 
     /***************************
      * Main entry - record triggered events on opportunity, payment, and allocation
@@ -26,7 +25,8 @@ public without sharing class fsl_JournalEntryService {
      ***************************/
 
     public static void createEntries(Set<Id> setOpportunityIds) {
-        
+        // Load settings
+
     }
 
     /**
@@ -89,34 +89,33 @@ public without sharing class fsl_JournalEntryService {
     }
 
     /**
-     * @return Map<String, Global_GL_Account__mdt> map of payment accounts
+     * Return map of payment accounts by label from cache
+     * @return Map<String, Global_GL_Account__mdt>
      */
 
-    public static Map<String, Global_GL_Account__mdt> getPaymentAccountMap() {
-        if (mapPaymentAccounts == null) {
-            mapPaymentAccounts = new Map<String, Global_GL_Account__mdt>();
+    private static Map<String, Global_GL_Account__mdt> getMapGlobalAccounts() {
+        if (mapLabelToGlobalAccount == null) {
+            mapLabelToGlobalAccount = new Map<String, Global_GL_Account__mdt>();
             List<Global_GL_Account__mdt> lstAccounts = [
                 SELECT Id, Label, GL_Code__c, GL_Account_Name__c 
                   FROM Global_GL_Account__mdt 
-                 WHERE Type__c = :GLOBAL_GL_TYPE_PAYMENT
                  LIMIT 10000
             ];
             for (Global_GL_Account__mdt glAcc : lstAccounts) {
-                mapPaymentAccounts.put(glAcc.Label, glAcc);
+                mapLabelToGlobalAccount.put(glAcc.Label, glAcc);
             }
         }
-        return mapPaymentAccounts;
+        return mapLabelToGlobalAccount;
     }
 
     /**
-     * @return Global_GL_Account__mdt receivable global gl account
+     * @return Global_GL_Account__mdt
      */
 
-     public static Global_GL_Account__mdt getReceivablesAccount() {
-        if (receivablesAccount == null) {
-            receivablesAccount = Global_GL_Account__mdt.getInstance(RECEIVABLES_ACCOUNT_NAME);
-        }
-        return receivablesAccount;
-     }
+     public static Global_GL_Account__mdt getPaymentAccountByLabel(
+        String label
+     ) {
+        return getMapGlobalAccounts().get(label);
+    }
 
 }
