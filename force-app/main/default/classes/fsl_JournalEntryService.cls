@@ -178,6 +178,7 @@ public without sharing class fsl_JournalEntryService {
             mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) + a.npsp__Amount__c);
             mapGLCodeToName.put(glCode, a.npsp__General_Accounting_Unit__r.Name);
         }
+
         // Get expected receivables amount by subtracting payments from total opp amount
         if (
             strState == ACCOUNTING_STATE_COMMITTED && 
@@ -188,6 +189,7 @@ public without sharing class fsl_JournalEntryService {
                 (opp.npe01__Amount_Outstanding__c * -1)
             );
         }
+        
         return mapExpectedNets;
     }
 
