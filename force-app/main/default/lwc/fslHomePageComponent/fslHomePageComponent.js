@@ -24,6 +24,18 @@ export default class FslHomePageComponent extends LightningElement {
     startDate = null;
     endDate = null;
 
+    get isModeAll() {
+        return this.mode == 'All';
+    }
+
+    get isModeRecords() {
+        return this.mode == 'Records';
+    }
+
+    get isModeDates() {
+        return this.mode == 'Dates';
+    }
+
     get modeOptions() {
         return [
             { label: 'All', value: 'All' },

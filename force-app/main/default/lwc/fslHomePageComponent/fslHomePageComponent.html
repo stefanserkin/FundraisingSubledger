@@ -55,9 +55,6 @@
 
             <template if:true={isAccountingJobConfig}>
                 <div class="slds-p-around_medium">
-                    <h3 class="">Run Accounting Job</h3>
-                </div>
-                <div class="slds-p-around_medium">
                     <lightning-combobox
                         name="mode"
                         label="Mode"
@@ -67,13 +64,13 @@
                         onchange={handleModeChange} 
                     ></lightning-combobox>
                 </div>
-                <div class="slds-p-around_medium">
+                <div class="slds-p-around_medium" if:true={isModeRecords}>
                     <lightning-input type="text" label="Opportunity Record Ids CSV" onchange={handleRecordIdsChange}></lightning-input>
                 </div>
-                <div class="slds-p-around_medium">
+                <div class="slds-p-around_medium" if:true={isModeDates}>
                     <lightning-input type="date" name="startDate" label="Start Date" onchange={handleStartDateChange}></lightning-input>
                 </div>
-                <div class="slds-p-around_medium">
+                <div class="slds-p-around_medium" if:true={isModeDates}>
                     <lightning-input type="date" name="endDate" label="End Date" onchange={handleEndDateChange}></lightning-input>
                 </div>
                 <div class="slds-p-around_medium">
