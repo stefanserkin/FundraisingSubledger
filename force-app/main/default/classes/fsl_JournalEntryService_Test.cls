@@ -12,7 +12,7 @@ private class fsl_JournalEntryService_Test {
     }
 
     @isTest
-    static void testGetPaymentAccountMap() {
+    static void testGetDefaultPaymentAccount() {
         
     }
 

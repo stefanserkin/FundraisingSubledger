@@ -6,7 +6,9 @@ public with sharing class fsl_AccountingJobBatch implements Database.Batchable<s
     }
 
     public void execute(Database.BatchableContext bc, List<Opportunity> lstOpportunities) {
-        // Calculate stuff
+        Set<Id> setOppIds = new Set<Id>();
+        for (Opportunity opp : lstOpportunities) setOppIds.add(opp.Id);
+        fsl_JournalEntryService.createEntries(setOppIds);
     }
 
     public void finish(Database.BatchableContext bc) {

@@ -91,6 +91,10 @@ public with sharing class fsl_HomePageComponentController {
         }
     }
 
+    /**
+     * Delete all data - jes, opps, payments, allocations
+     */
+
     @AuraEnabled
     public static String deleteAllData() {
         try {
