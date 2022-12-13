@@ -1,0 +1,95 @@
+<template>
+    <lightning-card if:true={userFirstName} title={cardTitleAndUser} icon-name={cardIcon}>
+
+        <!-- WELCOME SECTION -->
+        <!--
+        <p class="slds-var-m-around_medium">
+            <img src={homePageWelcomeImage} />
+        </p>
+        -->
+
+        <!-- NAVIGATION SECTION -->
+        <div class="slds-text-heading_small slds-var-m-around_medium">
+            <lightning-icon icon-name="custom:custom96" alternative-text="Navigation" title="Navigation"></lightning-icon> 
+            &nbsp;Explore the App
+        </div>
+        <p class="slds-var-m-around_medium">
+            Here are some navigation options to go quickly to useful things
+        </p>
+        <ul class="slds-var-m-around_medium slds-list_dotted">
+            <li><a href="https://www.mets.com" target="_blank">A thing</a></li>
+            <li><a href="https://www.mets.com" target="_blank">Another thing</a></li>
+            <li><a href="https://www.mets.com" target="_blank">A different thing, honest</a></li>
+        </ul>
+
+        <!-- INFORMATION SECTION -->
+        <div class="slds-text-heading_small slds-var-m-around_medium">
+            <lightning-icon icon-name="custom:custom55" alternative-text="Information" title="Information"></lightning-icon> 
+            &nbsp;Fundraising Subledger Documentation
+        </div>
+        <p class="slds-var-m-around_medium">
+            Here is some helpful information about how to get around this fundraising subledger thing.
+        </p>
+        <ul class="slds-var-m-around_medium slds-list_dotted">
+            <li><a href="https://quip.com/he3BAxdakzq9/Fundraising-Subledger-Build-Deck" target="_blank">Fundraising Subledger Build Deck</a></li>
+            <li><a href="https://github.com/stefanserkin/FundraisingSubledger" target="_blank">Source (Git)</a></li>
+        </ul>
+
+        <!-- Actions and Buttons -->
+        <div class="slds-text-heading_small slds-var-m-around_medium">
+            <lightning-icon icon-name="standard:actions_and_buttons" alternative-text="Actions and Buttons" title="Actions"></lightning-icon> 
+            &nbsp;Actions
+        </div>
+        <div class="slds-var-m-around_medium">
+            <!-- SPINNER ON LOAD -->
+            <div if:true={isLoading} class="slds-is-relative slds-var-m-around_large" >
+                <lightning-spinner 
+                    alternative-text="Loading..." 
+                    variant="brand" 
+                    size="medium"
+                ></lightning-spinner>
+            </div>
+
+            <lightning-button variant={accountingJobToggleButtonVariant} label={accountingJobToggleButtonLabel} title="Accounting Job Toggle" onclick={handleToggleAccountingJob} ></lightning-button>
+            <lightning-button variant="destructive" label="Purge All Data" title="Purge All Data" onclick={handleDeleteAllData} class="slds-p-left_medium"></lightning-button>
+
+            <template if:true={isAccountingJobConfig}>
+                <div class="slds-p-around_medium">
+                    <h3 class="">Run Accounting Job</h3>
+                </div>
+                <div class="slds-p-around_medium">
+                    <lightning-combobox
+                        name="mode"
+                        label="Mode"
+                        value={value}
+                        placeholder="Select Mode"
+                        options={modeOptions}
+                        onchange={handleModeChange} 
+                    ></lightning-combobox>
+                </div>
+                <div class="slds-p-around_medium">
+                    <lightning-input type="text" label="Opportunity Record Ids CSV" onchange={handleRecordIdsChange}></lightning-input>
+                </div>
+                <div class="slds-p-around_medium">
+                    <lightning-input type="date" name="startDate" label="Start Date" onchange={handleStartDateChange}></lightning-input>
+                </div>
+                <div class="slds-p-around_medium">
+                    <lightning-input type="date" name="endDate" label="End Date" onchange={handleEndDateChange}></lightning-input>
+                </div>
+                <div class="slds-p-around_medium">
+                    <lightning-button variant="brand" label="Run Accounting Job" title="Run Accounting Job" onclick={handleRunAccountingJob} ></lightning-button>
+                </div>
+            </template>
+        </div>
+
+        <!-- FOOTER -->
+        <p slot="footer" class="slds-var-m-around_medium">
+            <!--
+            <a href="https://github.com/stefanserkin" target="_blank">
+                <img width="100px;" src={serkinSolutionsLogoImage} />
+            </a>
+            -->
+        </p>
+
+    </lightning-card>
+</template>

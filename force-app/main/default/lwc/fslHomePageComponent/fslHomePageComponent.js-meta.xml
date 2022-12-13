@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>55.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>FSL Home Page Component</masterLabel>
+    <targets>
+        <target>lightning__HomePage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__HomePage">
+            <property 
+                name="cardTitle" 
+                type="String" 
+                label="Card Title" 
+                default="Welcome to the Fundraising Subledger" 
+            />
+            <property 
+                name="cardIcon" 
+                type="String" 
+                label="SLDS Icon" 
+                default="custom:custom90" 
+                description="Choose an icon from the SLDS library"
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

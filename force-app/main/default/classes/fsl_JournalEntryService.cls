@@ -1,5 +1,9 @@
 public without sharing class fsl_JournalEntryService {
 
+    /******************************************************
+     * STATIC VARIABLES
+     ******************************************************/
+
     // Constants - common labels
     public static final String ACCOUNTING_STATE_UNCOMMITTED = 'Uncommitted';
     public static final String ACCOUNTING_STATE_COMMITTED = 'Committed';
@@ -18,8 +22,11 @@ public without sharing class fsl_JournalEntryService {
     private static Global_GL_Account__mdt defaultReceivablesAccount;
     private static Global_GL_Account__mdt defaultPaymentAccount;
     private static Map<String, String> mapGLCodeToName;
-
     private static Set<Id> setUpdatedOppIds;
+
+    /******************************************************
+     * PUBLIC METHODS
+     ******************************************************/
 
     /***************************
      * Main entry - record triggered events on opportunity, payment, and allocation
@@ -30,12 +37,115 @@ public without sharing class fsl_JournalEntryService {
     public static void createEntries(
         Set<Id> setOpportunityIds
     ) {
-        // List of jes to insert
-        List<Journal_Entry__c> lstJEsToInsert = new List<Journal_Entry__c>();
         // If necessary, initialize cache variables
         initializeCache();
         // Get opportunities with details
-        Map<Id, Opportunity> mapOpportunities = getOppsWithAccountingDetails(setOpportunityIds);
+        Map<Id, Opportunity> mapOpportunities = getOppsWithAccountingDetails( setOpportunityIds );
+        // Get journal entries representing the delta for any relevant gl accounts
+        List<Journal_Entry__c> lstJEsToInsert = generateJournalEntries( mapOpportunities );
+        // Insert journal entries
+        if (!lstJEsToInsert.isEmpty()) insert lstJEsToInsert;
+    }
+
+    /***************************
+     * Get global payment account
+     * @return Global_GL_Account__mdt
+     ***************************/
+
+     public static Global_GL_Account__mdt getDefaultPaymentAccount() {
+        if (defaultPaymentAccount == null) {
+            for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
+                if (acc.Id == appSettings.Default_Payment_Account__c) {
+                    defaultPaymentAccount = acc;
+                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
+                    break;
+                }
+            }
+        }
+        return defaultPaymentAccount;
+    }
+
+    /***************************
+     * Get global payment account
+     * @return Global_GL_Account__mdt
+     ***************************/
+
+    public static Global_GL_Account__mdt getDefaultReceivablesAccount() {
+        if (defaultReceivablesAccount == null) {
+            for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
+                if (acc.Id == appSettings.Default_Receivables_Account__c) {
+                    defaultReceivablesAccount = acc;
+                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
+                    break;
+                }
+            }
+        }
+        return defaultReceivablesAccount;
+    }
+
+    /***************************
+     * Returns the open accounting period
+     * Only one accounting period may be open at a time
+     * @return Accounting_Period__c open accounting period
+     ***************************/
+
+     public static Accounting_Period__c getOpenAccountingPeriod() {
+        if (openAccountingPeriod == null) {
+            openAccountingPeriod = [
+                SELECT Id, Start_Date__c, End_Date__c, Status__c 
+                  FROM Accounting_Period__c 
+                 WHERE Status__c = :appSettings.Accounting_Period_Open_Status__c 
+                 LIMIT 1
+            ];
+        }
+        return openAccountingPeriod;
+    }
+
+    /***************************
+     * @return Map<String, String> Map of opportunity stages to corresponding accounting state
+     ***************************/
+
+    public static Map<String, String> getStageToStateMappings() {
+        if (mapStageToState == null) {
+            mapStageToState = new Map<String, String>();
+            List<Accounting_State_Mapping__mdt> lstMappings = Accounting_State_Mapping__mdt.getAll().values();
+            for (Accounting_State_Mapping__mdt asm : lstMappings) {
+                mapStageToState.put(
+                    asm.Opportunity_Stage__c, 
+                    asm.Accounting_State__c
+                );
+            }
+        }
+        return mapStageToState;
+    }
+
+    /******************************************************
+     * PRIVATE METHODS
+     ******************************************************/
+
+    /***************************
+     * Initialize cache
+     ***************************/
+
+     private static void initializeCache() {
+        if (setUpdatedOppIds == null) setUpdatedOppIds = new Set<Id>();
+        if (mapGLCodeToName == null) mapGLCodeToName = new Map<String, String>();
+        defaultPaymentAccount = getDefaultPaymentAccount();
+        defaultReceivablesAccount = getDefaultReceivablesAccount();
+    }
+
+    /***************************
+     * Generate journal entries for a collection of opportunities
+     * @param Map<Id, Opportunity> mapOpportunities Opps with related payments, allocations, and jes
+     * @return Journal_Entry__c[] A list of jes ready to insert
+     ***************************/
+
+    private static List<Journal_Entry__c> generateJournalEntries(
+        Map<Id, Opportunity> mapOpportunities
+    ) {
+
+        List<Journal_Entry__c> lstJEsToInsert = new List<Journal_Entry__c>();
+
         for (Opportunity opp : mapOpportunities.values()) {
             // Exit if override is set
             if (opp.Do_Not_Create_Journal_Entries__c) continue;
@@ -43,9 +153,10 @@ public without sharing class fsl_JournalEntryService {
             // Create map of relevant GLs and expected net
             Map<String, Decimal> mapExpectedNets = getExpectedNetMap(opp);
             Map<String, Decimal> mapCurrentNets = getCurrentNetMap(opp.Journal_Entries__r);
+
             if (mapExpectedNets.isEmpty()) {
                 System.debug('::::: mapExpectedNets is empty');
-                // zero stuff out
+                // TODO - ZERO STUFF OUT
             } else {
                 // Find changes to gl attributions
                 for (String glCode : mapExpectedNets.keySet()) {
@@ -74,54 +185,14 @@ public without sharing class fsl_JournalEntryService {
             }
         }
 
-        if (!lstJEsToInsert.isEmpty()) {
-            insert lstJEsToInsert;
-        }
-
+        return lstJEsToInsert;
     }
 
-    /**
-     * Initialize cached collections
-     */
-
-    private static void initializeCache() {
-        if (setUpdatedOppIds == null) setUpdatedOppIds = new Set<Id>();
-        if (mapGLCodeToName == null) mapGLCodeToName = new Map<String, String>();
-        defaultPaymentAccount = getDefaultPaymentAccount();
-        defaultReceivablesAccount = getDefaultReceivablesAccount();
-    }
-
-    /**
-     * Get new journal entry
-     * @param Opportunity opp The opportunity for this journal entry
-     * @param String glCode The gl code to debit/credit
-     * @param Decimal delta The amount of the je - net of credit
-     * @return Journal_Entry__c A journal entry ready to be inserted
-     */
-
-    private static Journal_Entry__c getNewJournalEntry(
-        Opportunity opp, 
-        String glCode, 
-        Decimal delta
-    ) {
-        Journal_Entry__c je = new Journal_Entry__c();
-        je.Accounting_Period__c = getOpenAccountingPeriod().Id;
-        je.Opportunity__c = opp.Id;
-        je.Account__c = opp.AccountId;
-        je.Type__c = delta > 0 ? CREDIT_LABEL : DEBIT_LABEL;
-        je.Amount__c = Math.abs(delta);
-        je.Date__c = Date.today();
-        je.GL_Account_Name__c = mapGLCodeToName.get(glCode);
-        je.GL_Code__c = glCode;
-        je.Posting_Status__c = appSettings.Default_Journal_Entry_Posting_Status__c;
-        return je;
-    }
-
-    /**
+    /***************************
      * Get map of expected GL net values
      * @param Opportunity opp Opportunity with child payments and allocations
      * @return Map<String, Decimal> Map of GL codes and expected net totals
-     */
+     ***************************/
 
     private static Map<String, Decimal> getExpectedNetMap(
         Opportunity opp
@@ -142,18 +213,14 @@ public without sharing class fsl_JournalEntryService {
                 ? getGlobalAccountMap().get(p.npe01__Payment_Method__c).GL_Code__c
                 : getDefaultPaymentAccount().GL_Code__c;
             // Add gl to map
-            if (!mapExpectedNets.containsKey(glCode)) {
-                mapExpectedNets.put(glCode, 0);
-            }
+            if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
             // Subtract amount of paid GL for payment accounts
             mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - p.npe01__Payment_Amount__c);
         }
         for (npsp__Allocation__c a : opp.npsp__Allocations__r) {
             glCode = a.npsp__General_Accounting_Unit__r.GL_Code__c;
             // Add gl to map
-            if (!mapExpectedNets.containsKey(glCode)) {
-                mapExpectedNets.put(glCode, 0);
-            }
+            if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
             // Add amount of paid GL for allocation accounts
             mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) + a.npsp__Amount__c);
             mapGLCodeToName.put(glCode, a.npsp__General_Accounting_Unit__r.Name);
@@ -173,11 +240,11 @@ public without sharing class fsl_JournalEntryService {
         return mapExpectedNets;
     }
 
-    /**
+    /***************************
      * Get map of current GL net values from journal entries
      * @param Journal_Entry__c[] lstJEs List of journal entries to assess
      * @return Map<String, Decimal> Map of existing GL codes to their net totals
-     */
+     ***************************/
 
     private static Map<String, Decimal> getCurrentNetMap(
         List<Journal_Entry__c> lstJEs
@@ -186,11 +253,10 @@ public without sharing class fsl_JournalEntryService {
         String glCode = '';
         for (Journal_Entry__c je : lstJEs) {
             glCode = je.GL_Code__c;
-            if (!mapCurrentNets.containsKey(glCode)) {
-                mapCurrentNets.put(glCode, 0);
-            }
+            // Add gl to map
+            if (!mapCurrentNets.containsKey(glCode)) mapCurrentNets.put(glCode, 0);
             Decimal netValue = mapCurrentNets.get(glCode);
-            // Positive value for credits, negative for debits
+            // Assign a positive value to credits, negative to debits
             netValue += je.Type__c == DEBIT_LABEL ? (je.Amount__c) * -1 : je.Amount__c;
             mapCurrentNets.put(glCode, netValue);
             mapGLCodeToName.put(glCode, je.GL_Account_Name__c);
@@ -198,48 +264,39 @@ public without sharing class fsl_JournalEntryService {
         return mapCurrentNets;
     }
 
-    /**
-     * Returns the open accounting period
-     * Only one accounting period may be open at a time
-     * @return Accounting_Period__c open accounting period
-     */
+    /***************************
+     * Get new journal entry
+     * @param Opportunity opp The opportunity for this journal entry
+     * @param String glCode The gl code to debit/credit
+     * @param Decimal delta The amount of the je - net of credit
+     * @return Journal_Entry__c A journal entry ready to be inserted
+     ***************************/
 
-     public static Accounting_Period__c getOpenAccountingPeriod() {
-        if (openAccountingPeriod == null) {
-            openAccountingPeriod = [
-                SELECT Id, Start_Date__c, End_Date__c, Status__c 
-                  FROM Accounting_Period__c 
-                 WHERE Status__c = :appSettings.Accounting_Period_Open_Status__c 
-                 LIMIT 1
-            ];
-        }
-        return openAccountingPeriod;
+     private static Journal_Entry__c getNewJournalEntry(
+        Opportunity opp, 
+        String glCode, 
+        Decimal delta
+    ) {
+        Journal_Entry__c je = new Journal_Entry__c();
+        je.Accounting_Period__c = getOpenAccountingPeriod().Id;
+        je.Opportunity__c = opp.Id;
+        je.Account__c = opp.AccountId;
+        je.Type__c = delta > 0 ? CREDIT_LABEL : DEBIT_LABEL;
+        je.Amount__c = Math.abs(delta);
+        je.Date__c = Date.today();
+        je.GL_Account_Name__c = mapGLCodeToName.get(glCode);
+        je.GL_Code__c = glCode;
+        je.Posting_Status__c = appSettings.Default_Journal_Entry_Posting_Status__c;
+        return je;
     }
 
-    /**
-     * @return Map<String, String> Map of opportunity stages to corresponding accounting state
-     */
-
-    public static Map<String, String> getStageToStateMappings() {
-        if (mapStageToState == null) {
-            mapStageToState = new Map<String, String>();
-            List<Accounting_State_Mapping__mdt> lstMappings = Accounting_State_Mapping__mdt.getAll().values();
-            for (Accounting_State_Mapping__mdt asm : lstMappings) {
-                mapStageToState.put(
-                    asm.Opportunity_Stage__c, 
-                    asm.Accounting_State__c
-                );
-            }
-        }
-        return mapStageToState;
-    }
-
-    /**
+    /***************************
      * @param set<Id> set of opportunity ids
      * @return Opportunity[] Opps with payments and allocations
-     */
+     ***************************/
 
-    public static Map<Id, Opportunity> getOppsWithAccountingDetails(
+    @testVisible
+    private static Map<Id, Opportunity> getOppsWithAccountingDetails(
         Set<Id> setOpportunityIds
     ) {
         return new Map<Id, Opportunity>([
@@ -257,10 +314,10 @@ public without sharing class fsl_JournalEntryService {
         ]);
     }
 
-    /**
+    /***************************
      * Return map of payment accounts by label from cache
      * @return Map<String, Global_GL_Account__mdt>
-     */
+     ***************************/
 
     private static Map<String, Global_GL_Account__mdt> getGlobalAccountMap() {
         if (mapLabelToGlobalAccount == null) {
@@ -276,42 +333,6 @@ public without sharing class fsl_JournalEntryService {
             }
         }
         return mapLabelToGlobalAccount;
-    }
-
-    /**
-     * Get global payment account
-     * @return Global_GL_Account__mdt
-     */
-
-    public static Global_GL_Account__mdt getDefaultPaymentAccount() {
-        if (defaultPaymentAccount == null) {
-            for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
-                if (acc.Id == appSettings.Default_Payment_Account__c) {
-                    defaultPaymentAccount = acc;
-                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
-                    break;
-                }
-            }
-        }
-        return defaultPaymentAccount;
-    }
-
-    /**
-     * Get global payment account
-     * @return Global_GL_Account__mdt
-     */
-
-    public static Global_GL_Account__mdt getDefaultReceivablesAccount() {
-        if (defaultReceivablesAccount == null) {
-            for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
-                if (acc.Id == appSettings.Default_Receivables_Account__c) {
-                    defaultReceivablesAccount = acc;
-                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
-                    break;
-                }
-            }
-        }
-        return defaultReceivablesAccount;
     }
 
 }
