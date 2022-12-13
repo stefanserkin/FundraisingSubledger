@@ -100,7 +100,7 @@ export default class FslHomePageComponent extends LightningElement {
                     );
                 }
                 this.isAccountingJobConfig = false;
-                this.isLoading = true;
+                this.isLoading = false;
             })
             .catch(error => {
                 console.error(error);
@@ -113,7 +113,7 @@ export default class FslHomePageComponent extends LightningElement {
                     })
                 );
                 this.isAccountingJobConfig = false;
-                this.isLoading = true;
+                this.isLoading = false;
             });
     }
 
@@ -140,8 +140,8 @@ export default class FslHomePageComponent extends LightningElement {
                                 variant: 'success'
                             })
                         );
-                        this.isLoading = false;
                     }
+                    this.isLoading = false;
                 })
                 .catch(error => {
                     console.error(error);
