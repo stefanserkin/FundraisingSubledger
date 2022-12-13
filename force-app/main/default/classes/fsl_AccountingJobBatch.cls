@@ -1,7 +1,7 @@
 public with sharing class fsl_AccountingJobBatch implements Database.Batchable<sObject> {
     
     public Database.QueryLocator start(Database.BatchableContext bc) {
-        String query = 'SELECT Id FROM Opportunity';
+        String query = 'SELECT Id FROM Opportunity WHERE LastModifiedDate = YESTERDAY OR Id IN (SELECT npe01__Opportunity__c FROM npe01__OppPayment__c WHERE LastModifiedDate = YESTERDAY) OR Id IN (SELECT npsp__Opportunity__c FROM npsp__Allocation__c WHERE LastModifiedDate = YESTERDAY)';
         return Database.getQueryLocator(query);
     }
 
