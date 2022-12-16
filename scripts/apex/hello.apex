@@ -6,4 +6,4 @@
 //     SFDX: Execute Anonymous Apex with Editor Contents
 
 // Schedule accounting job
-fsl_AccountingJobScheduler.run();
+// fsl_AccountingJobScheduler.run();

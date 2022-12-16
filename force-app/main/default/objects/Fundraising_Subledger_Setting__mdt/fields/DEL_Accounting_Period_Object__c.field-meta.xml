@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DEL_Accounting_Period_Object__c</fullName>
+    <description>The sObject that represents an accounting period</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>The sObject that represents an accounting period</inlineHelpText>
+    <label>DEL Accounting Period Object</label>
+    <referenceTo>EntityDefinition</referenceTo>
+    <relationshipLabel>Fundraising_Subledger_Settings</relationshipLabel>
+    <relationshipName>Fundraising_Subledger_Settings</relationshipName>
+    <required>false</required>
+    <type>MetadataRelationship</type>
+    <unique>false</unique>
+</CustomField>

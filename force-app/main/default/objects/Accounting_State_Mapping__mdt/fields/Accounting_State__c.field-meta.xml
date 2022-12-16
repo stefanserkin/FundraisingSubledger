@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Accounting_State__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Accounting State</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Uncommitted</fullName>
+                <default>true</default>
+                <label>Uncommitted</label>
+            </value>
+            <value>
+                <fullName>Committed</fullName>
+                <default>false</default>
+                <label>Committed</label>
+            </value>
+            <value>
+                <fullName>Finalized</fullName>
+                <default>false</default>
+                <label>Finalized</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

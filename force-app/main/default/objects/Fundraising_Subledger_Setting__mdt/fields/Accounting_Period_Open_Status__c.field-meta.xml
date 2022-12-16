@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Accounting_Period_Open_Status__c</fullName>
+    <description>The status value that represents an open accounting period. Must match the value in the picklist exactly.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>The status value that represents an open accounting period. Must match the value in the picklist exactly.</inlineHelpText>
+    <label>Accounting Period Open Status</label>
+    <length>50</length>
+    <required>true</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

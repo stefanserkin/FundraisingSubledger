@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>DEL_Receivables_GL_Account__c</fullName>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>DEL Receivables GL Account</label>
+    <referenceTo>Global_GL_Account__mdt</referenceTo>
+    <relationshipLabel>DEL Fundraising Subledger Settings</relationshipLabel>
+    <relationshipName>DEL_Fundraising_Subledger_Settings</relationshipName>
+    <required>false</required>
+    <type>MetadataRelationship</type>
+    <unique>false</unique>
+</CustomField>

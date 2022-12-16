@@ -50,8 +50,19 @@
                 ></lightning-spinner>
             </div>
 
-            <lightning-button variant={accountingJobToggleButtonVariant} label={accountingJobToggleButtonLabel} title="Accounting Job Toggle" onclick={handleToggleAccountingJob} ></lightning-button>
-            <lightning-button variant="destructive" label="Purge All Data" title="Purge All Data" onclick={handleDeleteAllData} class="slds-p-left_medium"></lightning-button>
+            <!-- MAIN ACTION BUTTONS -->
+            <div class="slds-grid slds-grid_align-space">
+                <div class="slds-col">
+                    <span>
+                        <lightning-button variant={accountingJobToggleButtonVariant} label={accountingJobToggleButtonLabel} title="Accounting Job Toggle" onclick={handleToggleAccountingJob} ></lightning-button>
+                    </span>
+                </div>
+                <div class="slds-col">
+                    <span>
+                        <lightning-button variant="destructive" label="Purge All Data" title="Purge All Data" onclick={handleDeleteAllData} class="slds-p-left_medium"></lightning-button>
+                    </span>
+                </div>
+            </div>
 
             <template if:true={isAccountingJobConfig}>
                 <div class="slds-p-around_medium">

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Mappings of opportunity stages to accounting states in the fundraising subledger</description>
+    <label>Accounting State Mapping</label>
+    <pluralLabel>Accounting State Mappings</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

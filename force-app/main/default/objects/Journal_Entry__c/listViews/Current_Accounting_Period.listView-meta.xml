@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Current_Accounting_Period</fullName>
+    <columns>NAME</columns>
+    <columns>Date__c</columns>
+    <columns>Debit__c</columns>
+    <columns>Credit__c</columns>
+    <columns>GL_Code__c</columns>
+    <columns>GL_Account_Name__c</columns>
+    <columns>Opportunity__c</columns>
+    <columns>Posting_Status__c</columns>
+    <filterScope>Everything</filterScope>
+    <filters>
+        <field>Accounting_Period__c</field>
+        <operation>equals</operation>
+        <value>December 2022</value>
+    </filters>
+    <label>Current Accounting Period</label>
+</ListView>
