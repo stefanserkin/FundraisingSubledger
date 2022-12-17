@@ -5,6 +5,7 @@ import LightningConfirm from 'lightning/confirm';
 
 import FUTURE_ALLOCATION_OBJECT from '@salesforce/schema/Future_Allocation__c';
 import GAU_FIELD from '@salesforce/schema/Future_Allocation__c.General_Accounting_Unit__c';
+import FUTURE_SET_FIELD from '@salesforce/schema/Future_Allocation__c.Future_Allocation_Set__c';
 import AMOUNT_FIELD from '@salesforce/schema/Future_Allocation__c.Amount__c';
 import PERCENT_FIELD from '@salesforce/schema/Future_Allocation__c.Percent__c';
 
@@ -12,20 +13,16 @@ export default class FslFutureAllocationEditor extends LightningElement {
     @api opportunityId;
     @api allocationSetId;
     @api allocationSetDate;
-    // @api futureAllocationSets;
     @api futureAllocations;
-    @track newAllocationSets = [];
+    @track newFutureAllocations = [];
 
     isLoading = false;
     error;
 
     isEditDate = false;
     
-
     futureAllocationObj = FUTURE_ALLOCATION_OBJECT;
-    gauField = GAU_FIELD;
-    amountField = AMOUNT_FIELD;
-    percentField = PERCENT_FIELD;
+    fields = [GAU_FIELD, FUTURE_SET_FIELD, AMOUNT_FIELD, PERCENT_FIELD];
 
     handleCloseEvent() {
         this.dispatchEvent(new CustomEvent('close'));
@@ -54,6 +51,29 @@ export default class FslFutureAllocationEditor extends LightningElement {
             new ShowToastEvent({
                 title: 'Success',
                 message: 'The future allocation details were updated',
+                variant: 'success'
+            })
+        );
+        this.handleRefreshApex();
+    }
+
+    handleNewAllocationSuccess(event) {
+        console.log('::: handle success for ' + event.detail.id);
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'The new allocation was added',
+                variant: 'success'
+            })
+        );
+        this.handleRefreshApex();
+    }
+
+    handleUpdateDateSuccess(event) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'Date has been updated',
                 variant: 'success'
             })
         );
@@ -99,34 +119,28 @@ export default class FslFutureAllocationEditor extends LightningElement {
         }
     }
 
-    /*
-
-    handleAddNewSet() {
-        let newSet = { 
-            'sobjectType': 'Future_Allocation_Set__c', 
-            'Opportunity__c': this.opportunityId, 
-            'formattedName': `New Future Allocation Set`, 
-            'isEditDate': true,
-            'setIndex': this.newAllocationSets.length
+    handleNewRow() {
+        let newAlloc = { 
+            'sobjectType': 'Future_Allocation__c', 
+            'Future_Allocation_Set__c': this.allocationSetId, 
+            'General_Accounting_Unit__c': null, 
+            'Amount__c': 0
         };
-        console.log('::: newSet');
-        console.log(newSet);
-        console.log(':::: before adding to set: ' + this.hasNewAllocationSets);
-        this.newAllocationSets.push(newSet);
-        console.log(':::: after adding to set: ' + this.hasNewAllocationSets);
+        console.log(newAlloc);
+        let newArray = this.newFutureAllocations;
+        newArray.push(newAlloc);
+        this.newFutureAllocations = newArray;
+        console.table(this.newFutureAllocations);
     }
 
-    handleNewRow(event) {
-        console.log('::::: handleNewRow with record id: ' + event.target.dataset.setId);
-        const setId = event.target.dataset.setId;
-        let newAlloc = { 'sobjectType': 'Future_Allocation__c' };
-        newAlloc.Future_Allocation_Set__c = setId;
-        newAlloc.General_Accounting_Unit__c = '';
-        newAlloc.Amount__c = 0;
-        console.log('::::: newAlloc has set id: ' + newAlloc.Future_Allocation_Set__c);
-        this.futureAllocationSets.find(obj => obj.Id === setId).newAllocations.push(newAlloc);
+    handleCancelNewRow(event) {
+        let index = event.target.dataset.index;
+        console.log('index ' + index);
+        console.table(this.newFutureAllocations);
+        // WHY DOESN'T THIS WORK? I DON'T THINK IT'S FINDING THE ITEM AT ALL
+        // BUT STILL REMOVES THE LAST ITEM IN THE ARRAY
+        this.newFutureAllocations.splice(index, 1);
+        console.table(this.newFutureAllocations);
     }
-
-    */
 
 }

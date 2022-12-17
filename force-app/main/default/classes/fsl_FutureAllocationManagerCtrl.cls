@@ -27,9 +27,28 @@ public with sharing class fsl_FutureAllocationManagerCtrl {
             ];
             return lstSets;
         } catch (Exception e) {
-            System.debug('::::: getFutureAllocationSets error: ' + e.getMessage());
+            String errorMessage = 'The following exception has occurred: ' + e.getMessage();
+            System.debug('::::: ' + errorMessage);
+            throw new AuraHandledException(errorMessage);
         }
-        return null;
+    }
+
+    @AuraEnabled
+    public static String createNewFutureSets(
+        String opportunityId, 
+        List<Date> lstDates
+    ) {
+        List<Future_Allocation_Set__c> lstToInsert = new List<Future_Allocation_Set__c>();
+        for (Date d : lstDates) {
+            lstToInsert.add(
+                new Future_Allocation_Set__c(
+                    Opportunity__c = opportunityId, 
+                    Effective_Date__c = d
+                )
+            );
+        }
+        if (!lstToInsert.isEmpty()) insert lstToInsert;
+        return 'Success';
     }
 
 }

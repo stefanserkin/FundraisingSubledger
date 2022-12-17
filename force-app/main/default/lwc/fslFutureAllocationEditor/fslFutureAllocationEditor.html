@@ -34,6 +34,13 @@
                             </h3>
                         </div>
                         <div class="slds-col slds-size_1-of-3">
+                            <lightning-record-edit-form
+                                record-id={allocationSetId} 
+                                object-api-name="Future_Allocation_Set__c" 
+                                onsuccess={handleUpdateDateSuccess}
+                            >
+
+                            </lightning-record-edit-form>
                             <lightning-input 
                                 if:true={isEditDate} 
                                 type="date" 
@@ -62,7 +69,7 @@
                         </div>
                     </div>
 
-                    <!-- UPDATE FUTURE ALLOCATIONS -->
+                    <!-- UPDATE EXISTING FUTURE ALLOCATIONS -->
                     <template if:true={futureAllocations}>
                         <div class="slds-grid slds-grid_vertical">
 
@@ -71,26 +78,28 @@
                                     <lightning-record-edit-form
                                         record-id={alloc.Id} 
                                         object-api-name="Future_Allocation__c" 
+                                        onsuccess={handleUpdateAllocationSuccess}
                                     >
 
                                         <lightning-messages> </lightning-messages>
 
                                         <lightning-layout vertical-align="center">
-                                            <lightning-layout-item flexibility="auto" padding="around-small">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
                                                 <lightning-input-field field-name="General_Accounting_Unit__c" variant="label-stacked"></lightning-input-field>
                                             </lightning-layout-item>
-                                            <lightning-layout-item flexibility="auto" padding="around-small">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
                                                 <lightning-input-field field-name="Amount__c" variant="label-stacked"></lightning-input-field>
                                             </lightning-layout-item>
-                                            <lightning-layout-item flexibility="auto" padding="around-small">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
                                                 <lightning-button 
                                                     class="slds-var-p-horizontal_medium" 
                                                     variant="brand" 
                                                     type="submit" 
                                                     name="update" 
                                                     label="Update" 
-                                                    onsuccess={handleUpdateAllocationSuccess}
                                                 ></lightning-button>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
                                                 <lightning-button 
                                                     class="slds-var-p-horizontal_medium" 
                                                     variant="destructive" 
@@ -103,11 +112,60 @@
                                             </lightning-layout-item>
                                         </lightning-layout>
                                     </lightning-record-edit-form>
-                            
 
                                 </div>
                             </template>
 
+                        </div>
+                    </template>
+
+                    <!-- CREATE NEW FUTURE ALLOCATIONS -->
+                    <template if:true={newFutureAllocations}>
+                        <div class="slds-grid slds-grid_vertical">
+
+                            <template for:each={newFutureAllocations} for:item="newAlloc" for:index="index">
+                                <div class="slds-col" key={newAlloc.index}>
+                                    <lightning-record-edit-form
+                                        object-api-name="Future_Allocation__c" 
+                                        onsuccess={handleNewAllocationSuccess}
+                                    >
+
+                                        <lightning-messages> </lightning-messages>
+                                        <lightning-layout vertical-align="center">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
+                                                <lightning-input-field field-name="Future_Allocation_Set__c" value={allocationSetId} variant="label-stacked"></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
+                                                <lightning-input-field field-name="General_Accounting_Unit__c" variant="label-stacked"></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
+                                                <lightning-input-field field-name="Amount__c" variant="label-stacked"></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_1-of-12">
+                                                <lightning-button 
+                                                    class="slds-var-p-horizontal_medium" 
+                                                    variant="brand" 
+                                                    type="submit" 
+                                                    name="save" 
+                                                    label="Save" 
+                                                ></lightning-button>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_1-of-12">
+                                                <lightning-button 
+                                                    class="slds-var-p-horizontal_medium" 
+                                                    variant="destructive-outline" 
+                                                    type="button" 
+                                                    name="cancel" 
+                                                    label="Cancel" 
+                                                    data-index={index} 
+                                                    onclick={handleCancelNewRow}
+                                                ></lightning-button>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </lightning-record-edit-form>
+
+                                </div>
+                            </template>
                         </div>
                     </template>
 

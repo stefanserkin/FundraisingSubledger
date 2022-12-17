@@ -1,10 +1,16 @@
 import { LightningElement, api, wire, track } from 'lwc';
-// import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
+import { createRecord } from 'lightning/uiRecordApi';
 import getFutureAllocationSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.getFutureAllocationSets';
+// import createNewFutureSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.createNewFutureSets';
 
-// import { loadStyle } from 'lightning/platformResourceLoader';
-// import modalStyle from '@salesforce/resourceUrl/modalWide';
+import { loadStyle } from 'lightning/platformResourceLoader';
+import modalStyle from '@salesforce/resourceUrl/modalWide';
+
+import FUTURE_SET_OBJECT from '@salesforce/schema/Future_Allocation_Set__c';
+import OPPORTUNITY_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Opportunity__c';
+import DATE_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Effective_Date__c';
 
 const COLS = [
     { label: 'Name', fieldName: 'Name', type: 'text', hideDefaultActions: true }, 
@@ -47,14 +53,15 @@ export default class FslFutureAllocationManager extends LightningElement {
     selectedSetDate;
     selectedSetAllocations = [];
 
+    isAddingFutureSet = false;
+    dateInput;
+
     // Load wide modal css from static resource
-    /*
 	connectedCallback() {
 		Promise.all([
 			 loadStyle(this, modalStyle)
 		]);
 	}
-    */
 
     handleSectionToggle(event) {
         const openSections = event.detail.openSections;
@@ -76,7 +83,6 @@ export default class FslFutureAllocationManager extends LightningElement {
         this.selectedSetDate = selectedSet.Effective_Date__c;
         this.selectedSetAllocations = selectedSet.Future_Allocations__r;
         console.log('::: selectedSetAllocations: ' + this.selectedSetAllocations);
-        console.log('::: modalEditMode: ' + this.modalEditMode);
         this.showModal = true;
     }
 
@@ -124,6 +130,39 @@ export default class FslFutureAllocationManager extends LightningElement {
             this.isLoading = false;
         }
     }
+    
+    
+    handleNewFutureSet() {
+        /*
+        console.log('Adding new future set');
+        let newSet = {
+            'sobjectType': 'Future_Allocation_Set__c', 
+            'Opportunity__c': this.recordId
+        }
+        console.log(newSet.Opportunity__c);
+        this.newFutureSets.push(newSet);
+        */
+        this.isAddingFutureSet = !this.isAddingFutureSet;
+    }
+
+    /*
+    handleNewFutureSetSuccess(event) {
+        console.log('Saving new future set');
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'The future allocation set was created',
+                variant: 'success'
+            })
+        );
+        this.handleRefreshData();
+        this.isAddingFutureSet = this.newFutureSets != null & this.newFutureSets.length > 0 ? true : false;
+    }
+    */
+
+    handleCancelNewRow() {
+        this.isAddingFutureSet = false;
+    }
 
     handleToggleModal() {
         this.handleRefreshData();
@@ -133,6 +172,55 @@ export default class FslFutureAllocationManager extends LightningElement {
     handleRefreshData() {
         refreshApex(this.wiredFutureAllocationSets);
         console.log('refreshed apex');
+    }
+
+
+    /************************************************
+     * Handle newly added future allocation sets
+     ************************************************/
+
+    handleCancel() {
+        this.isAddingFutureSet = false;
+    }
+
+    handleFieldChange(event) {
+        console.log('Field has changed');
+        this.dateInput = event.target.value;
+    }
+
+    handleSubmit() {
+
+        const fields = {};
+        fields[OPPORTUNITY_FIELD.fieldApiName] = this.recordId;
+        fields[DATE_FIELD.fieldApiName] = this.dateInput;
+        const recordInput = { 
+            apiName: FUTURE_SET_OBJECT.objectApiName, 
+            fields 
+        };
+
+        createRecord(recordInput)
+            .then(result => {
+                console.log(result);
+                this.handleRefreshData();
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'The new future allocation set was created',
+                        variant: 'success'
+                    })
+                );
+            })
+            .catch(error => {
+                console.error(error);
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error',
+                        message: 'Failed to create future allocation set: ' + error.message,
+                        variant: 'error'
+                    })
+                );
+            })
+
     }
 
 }

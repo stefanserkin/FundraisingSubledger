@@ -1,13 +1,23 @@
 <template>
-    <lightning-card title={cardTitle} icon-name={cardIcon}>
+    <lightning-card title={cardTitle} icon-name={cardIcon} class="slds-var-p-around_small">
 
         <div slot="actions">
+            <!-- REFRESH COMPONENT -->
+            <lightning-button-icon 
+                slot="actions" 
+                icon-name="utility:refresh"  
+                alternative-text="Refresh Component" 
+                title="Refresh"
+                onclick={handleRefreshData}
+            ><label></label>
+            </lightning-button-icon>
+            <!-- ADD NEW SET -->
             <lightning-button 
-                variant="brand-outline"
-                label="Manage Future Allocations"
-                title="Manage Future Allocations" 
-                onclick={handleToggleModal} 
-                class="slds-m-var-around_medium"
+                variant="brand-outline" 
+                label="Add New Future Set" 
+                title="Add New Future Set" 
+                onclick={handleNewFutureSet} 
+                class="slds-var-m-left_x-small"
             ></lightning-button>
         </div>
 
@@ -23,10 +33,37 @@
             </c-fsl-future-allocation-editor>
         </template>
 
-        <div class="slds-var-m-around_medium">
-            {activeSectionsMessage}
-        </div>
+        <!-- CREATE NEW FUTURE ALLOCATION SETS -->
+        <template if:true={isAddingFutureSet}>
+            <lightning-layout vertical-align="center">
+                <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
+                    <lightning-input 
+                        type="date" 
+                        name="effective-date" 
+                        label="Effective Date" 
+                        class="slds-var-p-around_medium" 
+                        onchange={handleFieldChange}
+                    ></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
+                    <lightning-button 
+                        variant="sucess" 
+                        label="Save" 
+                        title="Save" 
+                        onclick={handleSubmit} 
+                    ></lightning-button>
+                    <lightning-button 
+                        variant="destructive-outline" 
+                        label="Cancel" 
+                        title="Cancel" 
+                        onclick={handleCancel} 
+                        class="slds-var-m-left_x-small"
+                    ></lightning-button>
+                </lightning-layout-item>
+            </lightning-layout>
+        </template>
 
+        <!-- DISPLAY EXISTING FUTURE ALLOCATION SETS -->
         <lightning-accordion 
             allow-multiple-sections-open
             onsectiontoggle={handleSectionToggle}
@@ -39,31 +76,6 @@
                         <lightning-menu-item value="Edit_Date" label="TODO - Edit Effective Date"></lightning-menu-item>
                     </lightning-button-menu>
 
-                    <!-- LIGHTNING RECORD EDIT FORM -->
-                    <!--
-                    <template for:each={set.Future_Allocations__r} for:item="alloc">
-                        <lightning-record-edit-form
-                            key={alloc.Id} 
-                            record-id={alloc.Id} 
-                            object-api-name="Future_Allocation__c" 
-                        >
-                            <lightning-messages> </lightning-messages>
-                            <lightning-input-field field-name="Name"> </lightning-input-field>
-                            <lightning-input-field field-name="General_Accounting_Unit__c"> </lightning-input-field>
-                            <lightning-input-field field-name="Amount__c"> </lightning-input-field>
-                            <lightning-input-field field-name="Percent__c"> </lightning-input-field>
-                            <lightning-button
-                                class="slds-m-top_small"
-                                variant="brand"
-                                type="submit"
-                                name="update"
-                                label="Update"
-                            >
-                            </lightning-button>
-                        </lightning-record-edit-form>
-                    </template>
-                    -->
-
                     <!-- ALLOCATION DATATABLE -->
                     <div>
                         <lightning-datatable
@@ -71,50 +83,14 @@
                             columns={cols} 
                             key-field="Id" 
                             column-widths-mode="auto" 
+                            hide-checkbox-column 
                             onrowaction={handleRowAction}
                         ></lightning-datatable>
                     </div>
-
-                    <!-- ADD ALLOCATION BUTTON -->
-                    <!--
-                    <lightning-button 
-                        variant="base"
-                        label="TODO - New Row"
-                        title="New Future Allocation" 
-                        onclick={handleNewAllocation} 
-                    ></lightning-button>
-                    -->
 
                 </lightning-accordion-section>
             </template>
         </lightning-accordion>
 
-        <!--
-        <template for:each={futureAllocationSets} for:item="set">
-
-            <div class="slds-grid slds-gutters" key={set.Id}>
-                <div class="slds-col">
-                    <span>{set.Name}</span>
-                </div>
-
-                <div class="slds-col">
-                    <span>
-                        <lightning-input 
-                            type="date" 
-                            name="effective-date" 
-                            label="Effective Date" 
-                            value={set.Effective_Date__c} 
-                            class="slds-var-p-bottom_medium"
-                        ></lightning-input>
-                    </span>
-                </div>
-
-                <div class="slds-col">
-                    <span>Total Allocated: {set.totalAllocated}</span>
-                </div>
-
-            </div>
-        </template>
-    -->
     </lightning-card>
 </template>
