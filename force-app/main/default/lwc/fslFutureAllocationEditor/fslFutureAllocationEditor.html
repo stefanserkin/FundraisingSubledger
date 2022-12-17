@@ -12,7 +12,7 @@
                 </button>
                 <label></label>
                 <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
-                    Uh... there's nothing to see here.
+                    Manage Future Allocations
                 </h2>
             </header>
             <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1">
@@ -26,38 +26,49 @@
                 </div>
 
                 <template if:false={isLoading}>
+                    <!-- HEADERS -->
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col slds-size_1-of-3">
+                            <h3 class="slds-text-heading_medium">
+                                Configure future stuff
+                            </h3>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-input 
+                                if:true={isEditDate} 
+                                type="date" 
+                                name="effective-date" 
+                                label="Effective Date" 
+                                value={allocationSetDate} 
+                                class="slds-var-p-around_medium" 
+                                onchange={handleDateChange}
+                            ></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-button 
+                                if:false={isEditDate}
+                                variant="base-outline" 
+                                name="edit_date" 
+                                label="Edit Date" 
+                                onclick={handleEditDateToggle}
+                            ></lightning-button>
+                            <lightning-button 
+                                if:true={isEditDate}
+                                variant="brand" 
+                                name="update_date" 
+                                label="Update Date" 
+                                onclick={handleUpdateDate}
+                            ></lightning-button>
+                        </div>
+                    </div>
 
-                    <!-- FUTURE ALLOCATION SET -->
-                    <template for:each={futureAllocationSets} for:item="set">
-                        <div key={set.Id} class="slds-var-p-around_medium">
-                            
+                    <!-- UPDATE FUTURE ALLOCATIONS -->
+                    <template if:true={futureAllocations}>
+                        <div class="slds-grid slds-grid_vertical">
 
-                            <!-- HEADERS -->
-                            <div class="slds-grid slds-gutters">
-                                <div class="slds-col slds-size_1-of-3">
-                                    <h3 class="slds-text-heading_medium">
-                                        {set.Name}
-                                    </h3>
-                                    <lightning-input 
-                                        type="date" 
-                                        name="effective-date" 
-                                        label="Effective Date" 
-                                        value={set.Effective_Date__c} 
-                                        class="slds-var-p-around_medium"
-                                    ></lightning-input>
-                                </div>
-                                <div class="slds-col slds-size_2-of-3">
-                                </div>
-                            </div>
-
-                            <!-- UPDATE FUTURE ALLOCATIONS -->
-                            <template if:true={set.hasAllocations}>
-                                <template 
-                                    for:each={set.Future_Allocations__r} 
-                                    for:item="alloc"
-                                >
+                            <template for:each={futureAllocations} for:item="alloc">
+                                <div class="slds-col" key={alloc.Id}>
                                     <lightning-record-edit-form
-                                        key={alloc.Id} 
                                         record-id={alloc.Id} 
                                         object-api-name="Future_Allocation__c" 
                                     >
@@ -78,6 +89,7 @@
                                                     type="submit" 
                                                     name="update" 
                                                     label="Update" 
+                                                    onsuccess={handleUpdateAllocationSuccess}
                                                 ></lightning-button>
                                                 <lightning-button 
                                                     class="slds-var-p-horizontal_medium" 
@@ -91,29 +103,26 @@
                                             </lightning-layout-item>
                                         </lightning-layout>
                                     </lightning-record-edit-form>
-                                </template>
-                            </template>
+                            
 
-                            <template if:true={set.newAllocations}>
-                                Hooray! New allocations!
+                                </div>
                             </template>
-
-                            <!-- ADD ROW -->
-                            <div class="slds-m-var-around_medium">
-                                <lightning-button 
-                                    variant="base" 
-                                    name="add_new" 
-                                    label="Add New Row" 
-                                    data-set-id={set.Id} 
-                                    onclick={handleNewRow}
-                                ></lightning-button>
-                            </div>
 
                         </div>
                     </template>
 
+                    <!-- ADD ROW -->
+                    <div class="slds-m-var-around_medium">
+                        <lightning-button 
+                            variant="base" 
+                            name="add_new" 
+                            label="Add New Row" 
+                            onclick={handleNewRow}
+                        ></lightning-button>
+                    </div>
                 </template>
             </div>
+
             <footer class="slds-modal__footer">
                 <div class="slds-grid slds-gutters">
                     <div class="slds-col slds-size_2-of-3">

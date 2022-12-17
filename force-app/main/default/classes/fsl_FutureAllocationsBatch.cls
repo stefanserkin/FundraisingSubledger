@@ -6,6 +6,7 @@ public with sharing class fsl_FutureAllocationsBatch implements Database.Batchab
     }
 
     public void execute(Database.BatchableContext bc, List<Opportunity> lstOpportunities) {
+        System.debug(':::: batch query found ' + lstOpportunities.size() + ' records');
         Set<Id> setOppIds = new Set<Id>();
         for (Opportunity opp : lstOpportunities) setOppIds.add(opp.Id);
         fsl_FutureAllocationsHandler.reallocate(setOppIds);

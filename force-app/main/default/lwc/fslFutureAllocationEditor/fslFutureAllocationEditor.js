@@ -10,10 +10,17 @@ import PERCENT_FIELD from '@salesforce/schema/Future_Allocation__c.Percent__c';
 
 export default class FslFutureAllocationEditor extends LightningElement {
     @api opportunityId;
-    @api futureAllocationSets;
+    @api allocationSetId;
+    @api allocationSetDate;
+    // @api futureAllocationSets;
+    @api futureAllocations;
+    @track newAllocationSets = [];
 
     isLoading = false;
     error;
+
+    isEditDate = false;
+    
 
     futureAllocationObj = FUTURE_ALLOCATION_OBJECT;
     gauField = GAU_FIELD;
@@ -28,15 +35,29 @@ export default class FslFutureAllocationEditor extends LightningElement {
         this.dispatchEvent(new CustomEvent('refresh'));
     }
 
-    handleNewRow(event) {
-        console.log('::::: handleNewRow with record id: ' + event.target.dataset.setId);
-        const setId = event.target.dataset.setId;
-        let newAlloc = { 'sobjectType': 'Future_Allocation__c' };
-        newAlloc.Future_Allocation_Set__c = setId;
-        newAlloc.General_Accounting_Unit__c = '';
-        newAlloc.Amount__c = 0;
-        console.log('::::: newAlloc has set id: ' + newAlloc.Future_Allocation_Set__c);
-        this.futureAllocationSets.find(obj => obj.Id === setId).newAllocations.push(newAlloc);
+    handleEditDateToggle() {
+        this.isEditDate = !this.isEditDate;
+    }
+
+    handleDateChange(event) {
+        this.allocationSetDate = event.target.value;
+    }
+
+    handleUpdateDate() {
+        console.log(this.allocationSetDate);
+        alert(`Updated date to ${this.allocationSetDate}! Just kidding. TODO`);
+    }
+
+    handleUpdateAllocationSuccess(event) {
+        console.log('::: handle success for ' + event.detail.id);
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'The future allocation details were updated',
+                variant: 'success'
+            })
+        );
+        this.handleRefreshApex();
     }
 
     async handleDeleteRow(event) {
@@ -76,7 +97,36 @@ export default class FslFutureAllocationEditor extends LightningElement {
                     this.isLoading = false;
                 });
         }
-
     }
+
+    /*
+
+    handleAddNewSet() {
+        let newSet = { 
+            'sobjectType': 'Future_Allocation_Set__c', 
+            'Opportunity__c': this.opportunityId, 
+            'formattedName': `New Future Allocation Set`, 
+            'isEditDate': true,
+            'setIndex': this.newAllocationSets.length
+        };
+        console.log('::: newSet');
+        console.log(newSet);
+        console.log(':::: before adding to set: ' + this.hasNewAllocationSets);
+        this.newAllocationSets.push(newSet);
+        console.log(':::: after adding to set: ' + this.hasNewAllocationSets);
+    }
+
+    handleNewRow(event) {
+        console.log('::::: handleNewRow with record id: ' + event.target.dataset.setId);
+        const setId = event.target.dataset.setId;
+        let newAlloc = { 'sobjectType': 'Future_Allocation__c' };
+        newAlloc.Future_Allocation_Set__c = setId;
+        newAlloc.General_Accounting_Unit__c = '';
+        newAlloc.Amount__c = 0;
+        console.log('::::: newAlloc has set id: ' + newAlloc.Future_Allocation_Set__c);
+        this.futureAllocationSets.find(obj => obj.Id === setId).newAllocations.push(newAlloc);
+    }
+
+    */
 
 }

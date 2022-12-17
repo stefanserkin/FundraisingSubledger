@@ -1,10 +1,10 @@
-import { LightningElement, api, wire } from 'lwc';
+import { LightningElement, api, wire, track } from 'lwc';
 // import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import getFutureAllocationSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.getFutureAllocationSets';
 
-import { loadStyle } from 'lightning/platformResourceLoader';
-import modalStyle from '@salesforce/resourceUrl/modalWide';
+// import { loadStyle } from 'lightning/platformResourceLoader';
+// import modalStyle from '@salesforce/resourceUrl/modalWide';
 
 const COLS = [
     { label: 'Name', fieldName: 'Name', type: 'text', hideDefaultActions: true }, 
@@ -36,22 +36,25 @@ export default class FslFutureAllocationManager extends LightningElement {
     cardTitle = 'Manage Future Allocations';
     cardIcon = 'custom:custom30';
 
-    futureAllocationSets;
+    @track futureAllocationSets;
     wiredFutureAllocationSets = [];
 
     activeSections = [];
     activeSectionsMessage = '';
 
     showModal = false;
-    modalEditMode = '';
     selectedSetId;
+    selectedSetDate;
+    selectedSetAllocations = [];
 
     // Load wide modal css from static resource
+    /*
 	connectedCallback() {
 		Promise.all([
 			 loadStyle(this, modalStyle)
 		]);
 	}
+    */
 
     handleSectionToggle(event) {
         const openSections = event.detail.openSections;
@@ -65,9 +68,14 @@ export default class FslFutureAllocationManager extends LightningElement {
     }
 
     handleMenuSelect(event) {
-        this.selectedSetId = event.detail.recordId;
-        this.modalEditMode = event.detail.value;
+        this.selectedSetId = event.currentTarget.dataset.recordId;
         console.log('::: selectedSetId: ' + this.selectedSetId);
+        let selectedSet = this.futureAllocationSets.find(selSet => selSet.Id === this.selectedSetId);
+        console.log(selectedSet);
+        console.log(selectedSet.Effective_Date__c);
+        this.selectedSetDate = selectedSet.Effective_Date__c;
+        this.selectedSetAllocations = selectedSet.Future_Allocations__r;
+        console.log('::: selectedSetAllocations: ' + this.selectedSetAllocations);
         console.log('::: modalEditMode: ' + this.modalEditMode);
         this.showModal = true;
     }
@@ -103,9 +111,8 @@ export default class FslFutureAllocationManager extends LightningElement {
                         totalAllocated += alloc.Amount__c != null ? alloc.Amount__c : 0;
                     });
                 }
-                console.log(':::::: total allocated for id ' + dataParse.Id + ': ' + totalAllocated);
-                dataParse.newAllocations = [];
                 dataParse.totalAllocated = totalAllocated;
+                console.log(':::::: total allocated for id ' + dataParse.Id + ': ' + totalAllocated);
             });
             this.futureAllocationSets = rows;
             this.error = undefined;
@@ -119,15 +126,8 @@ export default class FslFutureAllocationManager extends LightningElement {
     }
 
     handleToggleModal() {
+        this.handleRefreshData();
         this.showModal = !this.showModal;
-    }
-
-    handleManageAllocations() {
-        this.showModal = true;
-    }
-
-    handleModalClose() {
-        this.showModal = false;
     }
 
     handleRefreshData() {

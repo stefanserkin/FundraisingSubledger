@@ -1,3 +1,7 @@
 .allocation-row {
     vertical-align: baseline;
 }
+
+.allocation-card {
+    display: block;
+}

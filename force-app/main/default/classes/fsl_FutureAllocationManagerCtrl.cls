@@ -18,7 +18,7 @@ public with sharing class fsl_FutureAllocationManagerCtrl {
                                Amount__c, 
                                Percent__c
                           FROM Future_Allocations__r
-                         ORDER BY Amount__c DESC)
+                         ORDER BY General_Accounting_Unit__c ASC)
                   FROM Future_Allocation_Set__c
                  WHERE Opportunity__c = :opportunityId
                   WITH SECURITY_ENFORCED
