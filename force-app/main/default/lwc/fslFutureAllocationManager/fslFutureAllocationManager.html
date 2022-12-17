@@ -1,0 +1,118 @@
+<template>
+    <lightning-card title={cardTitle} icon-name={cardIcon}>
+
+        <div slot="actions">
+            <lightning-button 
+                variant="brand-outline"
+                label="Manage Future Allocations"
+                title="Manage Future Allocations" 
+                onclick={handleToggleModal} 
+                class="slds-m-var-around_medium"
+            ></lightning-button>
+        </div>
+
+        <template if:true={showModal}>
+            <c-fsl-future-allocation-editor 
+                opportunity-id={recordId} 
+                future-allocation-sets={futureAllocationSets} 
+                onclose={handleToggleModal} 
+                onrefresh={handleRefreshData}
+            >
+            </c-fsl-future-allocation-editor>
+        </template>
+
+        <div class="slds-var-m-around_medium">
+            {activeSectionsMessage}
+        </div>
+
+        <lightning-accordion 
+            allow-multiple-sections-open
+            onsectiontoggle={handleSectionToggle}
+            active-section-name={activeSections}>
+            <template for:each={futureAllocationSets} for:item="set">
+                <lightning-accordion-section name={set.Id} label={set.formattedName} key={set.Id}>
+                    <!-- SECTION LEVEL ACTIONS -->
+                    <lightning-button-menu slot="actions" alternative-text="Show menu" icon-size="x-small" menu-alignment="auto" onselect={handleMenuSelect}>
+                        <lightning-menu-item value="Edit_Allocations" record-id={set.Id} label="TODO - Edit Allocations"></lightning-menu-item>
+                        <lightning-menu-item value="Edit_Date" record-id={set.Id} label="TODO - Edit Effective Date"></lightning-menu-item>
+                    </lightning-button-menu>
+
+                    <!-- LIGHTNING RECORD EDIT FORM -->
+                    <!--
+                    <template for:each={set.Future_Allocations__r} for:item="alloc">
+                        <lightning-record-edit-form
+                            key={alloc.Id} 
+                            record-id={alloc.Id} 
+                            object-api-name="Future_Allocation__c" 
+                        >
+                            <lightning-messages> </lightning-messages>
+                            <lightning-input-field field-name="Name"> </lightning-input-field>
+                            <lightning-input-field field-name="General_Accounting_Unit__c"> </lightning-input-field>
+                            <lightning-input-field field-name="Amount__c"> </lightning-input-field>
+                            <lightning-input-field field-name="Percent__c"> </lightning-input-field>
+                            <lightning-button
+                                class="slds-m-top_small"
+                                variant="brand"
+                                type="submit"
+                                name="update"
+                                label="Update"
+                            >
+                            </lightning-button>
+                        </lightning-record-edit-form>
+                    </template>
+                    -->
+
+                    <!-- ALLOCATION DATATABLE -->
+                    <div>
+                        <lightning-datatable
+                            data={set.Future_Allocations__r} 
+                            columns={cols} 
+                            key-field="Id" 
+                            column-widths-mode="auto" 
+                            onrowaction={handleRowAction}
+                        ></lightning-datatable>
+                    </div>
+
+                    <!-- ADD ALLOCATION BUTTON -->
+                    <!--
+                    <lightning-button 
+                        variant="base"
+                        label="TODO - New Row"
+                        title="New Future Allocation" 
+                        onclick={handleNewAllocation} 
+                    ></lightning-button>
+                    -->
+
+                </lightning-accordion-section>
+            </template>
+        </lightning-accordion>
+
+        <!--
+        <template for:each={futureAllocationSets} for:item="set">
+
+            <div class="slds-grid slds-gutters" key={set.Id}>
+                <div class="slds-col">
+                    <span>{set.Name}</span>
+                </div>
+
+                <div class="slds-col">
+                    <span>
+                        <lightning-input 
+                            type="date" 
+                            name="effective-date" 
+                            label="Effective Date" 
+                            value={set.Effective_Date__c} 
+                            class="slds-var-p-bottom_medium"
+                        ></lightning-input>
+                    </span>
+                </div>
+
+                <div class="slds-col">
+                    <span>Total Allocated: {set.totalAllocated}</span>
+                </div>
+
+            </div>
+        </template>
+    -->
+    </lightning-card>
+</template>
