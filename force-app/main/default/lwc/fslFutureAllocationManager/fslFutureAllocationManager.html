@@ -72,8 +72,8 @@
                 <lightning-accordion-section name={set.Id} label={set.formattedName} key={set.Id}>
                     <!-- SECTION LEVEL ACTIONS -->
                     <lightning-button-menu slot="actions" alternative-text="Show menu" data-record-id={set.Id} icon-size="x-small" menu-alignment="auto" onselect={handleMenuSelect}>
-                        <lightning-menu-item value="Edit_Allocations" label="TODO - Edit Allocations"></lightning-menu-item>
-                        <lightning-menu-item value="Edit_Date" label="TODO - Edit Effective Date"></lightning-menu-item>
+                        <lightning-menu-item value="edit" icon-name="action:edit" label="Edit"></lightning-menu-item>
+                        <lightning-menu-item value="delete" icon-name="action:delete" label="TODO - Delete"></lightning-menu-item>
                     </lightning-button-menu>
 
                     <!-- ALLOCATION DATATABLE -->

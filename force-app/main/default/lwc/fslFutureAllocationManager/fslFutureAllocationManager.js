@@ -75,6 +75,7 @@ export default class FslFutureAllocationManager extends LightningElement {
     }
 
     handleMenuSelect(event) {
+        const menuAction = event.detail.value;
         this.selectedSetId = event.currentTarget.dataset.recordId;
         console.log('::: selectedSetId: ' + this.selectedSetId);
         let selectedSet = this.futureAllocationSets.find(selSet => selSet.Id === this.selectedSetId);
@@ -83,7 +84,11 @@ export default class FslFutureAllocationManager extends LightningElement {
         this.selectedSetDate = selectedSet.Effective_Date__c;
         this.selectedSetAllocations = selectedSet.Future_Allocations__r;
         console.log('::: selectedSetAllocations: ' + this.selectedSetAllocations);
-        this.showModal = true;
+        if (menuAction === 'edit') {
+            this.showModal = true;
+        } else if (menuAction === 'delete') {
+            alert('TODO - use lightning confirm and delete set with all child allocations');
+        }
     }
 
     @wire(getFutureAllocationSets, {opportunityId: '$recordId'})
