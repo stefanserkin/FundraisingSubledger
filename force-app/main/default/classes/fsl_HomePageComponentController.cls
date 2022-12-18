@@ -1,9 +1,5 @@
 public with sharing class fsl_HomePageComponentController {
 
-    @testVisible private static final String MODE_ALL = 'All';
-    @testVisible private static final String MODE_RECORDS = 'Records';
-    @testVisible private static final String MODE_DATES = 'Dates';
-
     /**
      * All mode
      */
@@ -16,16 +12,16 @@ public with sharing class fsl_HomePageComponentController {
         Date endDate
     ) {
         try {
-            if (mode == MODE_ALL) {
+            if (mode == fsl_Constants.ACCOUNTING_JOB_MODE_ALL) {
                 runInAllMode();
             }
-            else if (mode == MODE_RECORDS) {
+            else if (mode == fsl_Constants.ACCOUNTING_JOB_MODE_RECORDS) {
                 runInRecordsMode(
                     mode, 
                     recordIds
                 );
             }
-            else if (mode == MODE_DATES) {
+            else if (mode == fsl_Constants.ACCOUNTING_JOB_MODE_DATES) {
                 runInDatesMode(
                     mode, 
                     startDate, 
