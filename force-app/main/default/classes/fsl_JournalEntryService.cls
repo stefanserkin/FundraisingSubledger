@@ -85,8 +85,7 @@ public without sharing class fsl_JournalEntryService {
 
     /***************************
      * Returns the open accounting period
-     * Only one accounting period may be open at a time
-     * @return Accounting_Period__c open accounting period
+     * @return Accounting_Period__c
      ***************************/
 
      public static Accounting_Period__c getOpenAccountingPeriod() {
@@ -95,6 +94,8 @@ public without sharing class fsl_JournalEntryService {
                 SELECT Id, Start_Date__c, End_Date__c, Status__c 
                   FROM Accounting_Period__c 
                  WHERE Status__c = :appSettings.Accounting_Period_Open_Status__c 
+                   AND Start_Date__c <= TODAY
+                   AND End_Date__c >= TODAY
                  LIMIT 1
             ];
         }
