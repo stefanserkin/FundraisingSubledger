@@ -2,7 +2,7 @@
 
 An accounting subledger for Salesforce's NPSP data model. This solution attempts to provide an accounting translation of fundraising activity in Salesforce by flattening financially impactful events into debit and credit journal entries.
 
-Utilizes Mitch Spano's [Apex Trigger Actions Framework](https://github.com/mitchspano/apex-trigger-actions-framework)
+Utilizes Mitch Spano's glorious [Apex Trigger Actions Framework](https://github.com/mitchspano/apex-trigger-actions-framework)
 
 ## Org
 
