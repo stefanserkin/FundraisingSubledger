@@ -5,17 +5,17 @@
             <!-- REFRESH COMPONENT -->
             <lightning-button-icon 
                 slot="actions" 
-                icon-name="utility:refresh"  
+                icon-name="utility:refresh" 
                 alternative-text="Refresh Component" 
-                title="Refresh"
+                title="Refresh" 
                 onclick={handleRefreshData}
             ><label></label>
             </lightning-button-icon>
             <!-- ADD NEW SET -->
             <lightning-button 
                 variant="brand-outline" 
-                label="Add New Future Set" 
-                title="Add New Future Set" 
+                label={newFutureSetButtonLabel} 
+                title={newFutureSetButtonLabel} 
                 onclick={handleNewFutureSet} 
                 class="slds-var-m-left_x-small"
             ></lightning-button>
@@ -35,6 +35,46 @@
 
         <!-- CREATE NEW FUTURE ALLOCATION SETS -->
         <template if:true={isAddingFutureSet}>
+
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-3"></div>
+                <div class="slds-col slds-size_1-of-3 slds-align_absolute-center">
+                    <span>
+                        <lightning-input 
+                            type="date" 
+                            name="effective-date" 
+                            label="Effective Date" 
+                            class="slds-var-p-around_medium" 
+                            onchange={handleFieldChange}
+                        ></lightning-input>
+                    </span>
+                </div>
+                <div class="slds-col slds-size_1-of-3"></div>
+            </div>
+            <div class="slds-grid slds-gutters">
+                <div class="slds-col slds-size_1-of-3"></div>
+                <div class="slds-col slds-size_1-of-3 slds-align_absolute-center">
+                    <span>
+                        <lightning-button 
+                            variant="brand" 
+                            label="Save" 
+                            title="Save" 
+                            onclick={handleSubmit}
+                        ></lightning-button>
+                        <lightning-button 
+                            variant="destructive-text" 
+                            label="Cancel" 
+                            title="Cancel" 
+                            onclick={handleCancel} 
+                            class="slds-var-m-left_small"
+                        ></lightning-button>
+                    </span>
+                </div>
+                <div class="slds-col slds-size_1-of-3"></div>
+            </div>
+
+
+            <!--
             <lightning-layout vertical-align="center">
                 <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
                     <lightning-input 
@@ -47,13 +87,13 @@
                 </lightning-layout-item>
                 <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
                     <lightning-button 
-                        variant="sucess" 
+                        variant="success" 
                         label="Save" 
                         title="Save" 
                         onclick={handleSubmit} 
                     ></lightning-button>
                     <lightning-button 
-                        variant="destructive-outline" 
+                        variant="destructive-text" 
                         label="Cancel" 
                         title="Cancel" 
                         onclick={handleCancel} 
@@ -61,6 +101,7 @@
                     ></lightning-button>
                 </lightning-layout-item>
             </lightning-layout>
+            -->
         </template>
 
         <!-- DISPLAY EXISTING FUTURE ALLOCATION SETS -->

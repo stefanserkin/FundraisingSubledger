@@ -11,6 +11,7 @@ import modalStyle from '@salesforce/resourceUrl/modalWide';
 import FUTURE_SET_OBJECT from '@salesforce/schema/Future_Allocation_Set__c';
 import OPPORTUNITY_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Opportunity__c';
 import DATE_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Effective_Date__c';
+import NewSenderAddress from '@salesforce/schema/Network.NewSenderAddress';
 
 const COLS = [
     { label: 'Name', fieldName: 'Name', type: 'text', hideDefaultActions: true }, 
@@ -63,9 +64,14 @@ export default class FslFutureAllocationManager extends LightningElement {
 		]);
 	}
 
-    handleSectionToggle(event) {
-        const openSections = event.detail.openSections;
+    get newFutureSetButtonLabel() {
+        return this.isAddingFutureSet ? 'Cancel' : 'New Future Allocation Set';
+    }
 
+    handleSectionToggle(event) {
+        console.log(event.detail.openSections);
+        const openSections = event.detail.openSections;
+        console.log(openSections.join(', '));
         if (openSections.length === 0) {
             this.activeSectionsMessage = 'All sections are closed';
         } else {
@@ -105,6 +111,7 @@ export default class FslFutureAllocationManager extends LightningElement {
             console.table(result.data);
 
             let rows = JSON.parse( JSON.stringify(result.data) );
+            let activeSections = [];
             rows.forEach(dataParse => {
                 console.log(':::: set id: ' + dataParse.Id);
                 let totalAllocated = 0;
@@ -123,6 +130,10 @@ export default class FslFutureAllocationManager extends LightningElement {
                     });
                 }
                 dataParse.totalAllocated = totalAllocated;
+                activeSections.push(dataParse.Id);
+                console.log('::::: activeSections: ' + activeSections);
+                this.activeSections = activeSections;
+                console.log('::::: this activeSections: ' + this.activeSections);
                 console.log(':::::: total allocated for id ' + dataParse.Id + ': ' + totalAllocated);
             });
             this.futureAllocationSets = rows;
