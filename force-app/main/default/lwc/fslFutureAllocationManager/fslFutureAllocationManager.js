@@ -3,7 +3,6 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import { createRecord } from 'lightning/uiRecordApi';
 import getFutureAllocationSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.getFutureAllocationSets';
-// import createNewFutureSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.createNewFutureSets';
 
 import { loadStyle } from 'lightning/platformResourceLoader';
 import modalStyle from '@salesforce/resourceUrl/modalWide';
@@ -11,7 +10,6 @@ import modalStyle from '@salesforce/resourceUrl/modalWide';
 import FUTURE_SET_OBJECT from '@salesforce/schema/Future_Allocation_Set__c';
 import OPPORTUNITY_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Opportunity__c';
 import DATE_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Effective_Date__c';
-import NewSenderAddress from '@salesforce/schema/Network.NewSenderAddress';
 
 const COLS = [
     { label: 'Name', fieldName: 'Name', type: 'text', hideDefaultActions: true }, 
@@ -69,9 +67,7 @@ export default class FslFutureAllocationManager extends LightningElement {
     }
 
     handleSectionToggle(event) {
-        console.log(event.detail.openSections);
         const openSections = event.detail.openSections;
-        console.log(openSections.join(', '));
         if (openSections.length === 0) {
             this.activeSectionsMessage = 'All sections are closed';
         } else {
@@ -83,13 +79,9 @@ export default class FslFutureAllocationManager extends LightningElement {
     handleMenuSelect(event) {
         const menuAction = event.detail.value;
         this.selectedSetId = event.currentTarget.dataset.recordId;
-        console.log('::: selectedSetId: ' + this.selectedSetId);
         let selectedSet = this.futureAllocationSets.find(selSet => selSet.Id === this.selectedSetId);
-        console.log(selectedSet);
-        console.log(selectedSet.Effective_Date__c);
         this.selectedSetDate = selectedSet.Effective_Date__c;
         this.selectedSetAllocations = selectedSet.Future_Allocations__r;
-        console.log('::: selectedSetAllocations: ' + this.selectedSetAllocations);
         if (menuAction === 'edit') {
             this.showModal = true;
         } else if (menuAction === 'delete') {
@@ -107,20 +99,15 @@ export default class FslFutureAllocationManager extends LightningElement {
                 weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: 'UTC'
             };
 
-            console.log(':::: received data from controller');
-            console.table(result.data);
-
             let rows = JSON.parse( JSON.stringify(result.data) );
             let activeSections = [];
             rows.forEach(dataParse => {
-                console.log(':::: set id: ' + dataParse.Id);
                 let totalAllocated = 0;
                 let dt = new Date( dataParse.Effective_Date__c );
                 let formattedDate = new Intl.DateTimeFormat('en-US', dateOptions).format(dt);
                 dataParse.formattedDate = formattedDate;
                 dataParse.formattedName = `${formattedDate} (${dataParse.Name})`;
                 dataParse.hasAllocations = dataParse.Future_Allocations__r != null && dataParse.Future_Allocations__r.length > 0 ? true : false;
-                console.log('::::: has allocations: ' + dataParse.hasAllocations);
                 if (dataParse.hasAllocations) {
                     dataParse.Future_Allocations__r.forEach(alloc => {
                         alloc.glName = alloc.General_Accounting_Unit__r.Name;
@@ -131,10 +118,7 @@ export default class FslFutureAllocationManager extends LightningElement {
                 }
                 dataParse.totalAllocated = totalAllocated;
                 activeSections.push(dataParse.Id);
-                console.log('::::: activeSections: ' + activeSections);
                 this.activeSections = activeSections;
-                console.log('::::: this activeSections: ' + this.activeSections);
-                console.log(':::::: total allocated for id ' + dataParse.Id + ': ' + totalAllocated);
             });
             this.futureAllocationSets = rows;
             this.error = undefined;
@@ -149,32 +133,8 @@ export default class FslFutureAllocationManager extends LightningElement {
     
     
     handleNewFutureSet() {
-        /*
-        console.log('Adding new future set');
-        let newSet = {
-            'sobjectType': 'Future_Allocation_Set__c', 
-            'Opportunity__c': this.recordId
-        }
-        console.log(newSet.Opportunity__c);
-        this.newFutureSets.push(newSet);
-        */
         this.isAddingFutureSet = !this.isAddingFutureSet;
     }
-
-    /*
-    handleNewFutureSetSuccess(event) {
-        console.log('Saving new future set');
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Success',
-                message: 'The future allocation set was created',
-                variant: 'success'
-            })
-        );
-        this.handleRefreshData();
-        this.isAddingFutureSet = this.newFutureSets != null & this.newFutureSets.length > 0 ? true : false;
-    }
-    */
 
     handleCancelNewRow() {
         this.isAddingFutureSet = false;
@@ -187,9 +147,7 @@ export default class FslFutureAllocationManager extends LightningElement {
 
     handleRefreshData() {
         refreshApex(this.wiredFutureAllocationSets);
-        console.log('refreshed apex');
     }
-
 
     /************************************************
      * Handle newly added future allocation sets
@@ -200,12 +158,10 @@ export default class FslFutureAllocationManager extends LightningElement {
     }
 
     handleFieldChange(event) {
-        console.log('Field has changed');
         this.dateInput = event.target.value;
     }
 
     handleSubmit() {
-
         const fields = {};
         fields[OPPORTUNITY_FIELD.fieldApiName] = this.recordId;
         fields[DATE_FIELD.fieldApiName] = this.dateInput;
@@ -216,7 +172,6 @@ export default class FslFutureAllocationManager extends LightningElement {
 
         createRecord(recordInput)
             .then(result => {
-                console.log(result);
                 this.handleRefreshData();
                 this.dispatchEvent(
                     new ShowToastEvent({
@@ -236,7 +191,6 @@ export default class FslFutureAllocationManager extends LightningElement {
                     })
                 );
             })
-
     }
 
 }
