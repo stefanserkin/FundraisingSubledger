@@ -24,8 +24,7 @@
         <template if:true={showModal}>
             <c-fsl-future-allocation-editor 
                 opportunity-id={recordId} 
-                allocation-set-id={selectedSetId} 
-                allocation-set-date={selectedSetDate} 
+                allocation-set={selectedSet} 
                 future-allocations={selectedSetAllocations} 
                 onclose={handleToggleModal} 
                 onrefresh={handleRefreshData}
@@ -56,17 +55,17 @@
                 <div class="slds-col slds-size_1-of-3 slds-align_absolute-center">
                     <span>
                         <lightning-button 
-                            variant="brand" 
-                            label="Save" 
-                            title="Save" 
-                            onclick={handleSubmit}
-                        ></lightning-button>
-                        <lightning-button 
                             variant="destructive-text" 
                             label="Cancel" 
                             title="Cancel" 
                             onclick={handleCancel} 
-                            class="slds-var-m-left_small"
+                        ></lightning-button>
+                        <lightning-button 
+                            variant="brand" 
+                            label="Save" 
+                            title="Save" 
+                            class="slds-var-m-left_small" 
+                            onclick={handleSubmit}
                         ></lightning-button>
                     </span>
                 </div>
@@ -84,7 +83,7 @@
                     <!-- SECTION LEVEL ACTIONS -->
                     <lightning-button-menu slot="actions" alternative-text="Show menu" data-record-id={set.Id} icon-size="x-small" menu-alignment="auto" onselect={handleMenuSelect}>
                         <lightning-menu-item value="edit" icon-name="action:edit" label="Edit"></lightning-menu-item>
-                        <lightning-menu-item value="delete" icon-name="action:delete" label="TODO - Delete"></lightning-menu-item>
+                        <lightning-menu-item value="delete" icon-name="action:delete" label="Delete"></lightning-menu-item>
                     </lightning-button-menu>
 
                     <!-- ALLOCATION DATATABLE -->

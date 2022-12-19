@@ -12,7 +12,7 @@
                 </button>
                 <label></label>
                 <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">
-                    Manage Future Allocations
+                    {modalHeader}
                 </h2>
             </header>
             <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1">
@@ -26,46 +26,63 @@
                 </div>
 
                 <template if:false={isLoading}>
-                    <!-- HEADERS -->
+                    <!-- DATE DISPLAY AND UPDATE -->
                     <div class="slds-grid slds-gutters">
                         <div class="slds-col slds-size_1-of-3">
+                            <template if:false={isEditDate}>
+                                <h3 class="slds-text-heading_medium">
+                                    {allocationSetDateFormatted} 
+                                    <lightning-button-icon 
+                                        slot="actions" 
+                                        icon-name="utility:edit" 
+                                        alternative-text="Edit Date" 
+                                        title="Edit Date" 
+                                        class="slds-var-p-left_small" 
+                                        onclick={handleEditDateToggle}
+                                    ><label></label>
+                                    </lightning-button-icon>
+                                </h3>
+                            </template>
+                            <template if:true={isEditDate}>
+                                <lightning-record-edit-form
+                                    record-id={allocationSet.Id} 
+                                    object-api-name="Future_Allocation_Set__c" 
+                                    onsuccess={handleUpdateDateSuccess}
+                                >
+                                    <lightning-input-field 
+                                        type="date" 
+                                        field-name="Effective_Date__c" 
+                                        value={allocationDate} 
+                                        class="slds-var-p-around_medium" 
+                                        onchange={handleDateChange}
+                                    ></lightning-input-field>
+                                    <lightning-button 
+                                        class="slds-var-p-horizontal_medium" 
+                                        variant="brand" 
+                                        type="submit" 
+                                        name="save" 
+                                        label="Save" 
+                                    ></lightning-button>
+                                </lightning-record-edit-form>
+                            </template>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
                             <h3 class="slds-text-heading_medium">
-                                Configure future stuff
+                                <lightning-formatted-number 
+                                    value={totalAllocated} 
+                                    format-style="currency" 
+                                    currency-code="USD" 
+                                    class={totalAllocatedClass}
+                                ></lightning-formatted-number>
+                                &nbsp;of&nbsp;
+                                <lightning-formatted-number 
+                                    value={totalOpportunityAmount} 
+                                    format-style="currency" 
+                                    currency-code="USD" 
+                             ></lightning-formatted-number>
                             </h3>
-                        </div>
-                        <div class="slds-col slds-size_1-of-3">
-                            <lightning-record-edit-form
-                                record-id={allocationSetId} 
-                                object-api-name="Future_Allocation_Set__c" 
-                                onsuccess={handleUpdateDateSuccess}
-                            >
-
-                            </lightning-record-edit-form>
-                            <lightning-input 
-                                if:true={isEditDate} 
-                                type="date" 
-                                name="effective-date" 
-                                label="Effective Date" 
-                                value={allocationSetDate} 
-                                class="slds-var-p-around_medium" 
-                                onchange={handleDateChange}
-                            ></lightning-input>
-                        </div>
-                        <div class="slds-col slds-size_1-of-3">
-                            <lightning-button 
-                                if:false={isEditDate}
-                                variant="base-outline" 
-                                name="edit_date" 
-                                label="Edit Date" 
-                                onclick={handleEditDateToggle}
-                            ></lightning-button>
-                            <lightning-button 
-                                if:true={isEditDate}
-                                variant="brand" 
-                                name="update_date" 
-                                label="Update Date" 
-                                onclick={handleUpdateDate}
-                            ></lightning-button>
                         </div>
                     </div>
 
@@ -84,13 +101,16 @@
                                         <lightning-messages> </lightning-messages>
 
                                         <lightning-layout vertical-align="center">
-                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_6-of-12">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
+                                                <lightning-input-field field-name="Future_Allocation_Set__c" variant="label-stacked" disabled></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
                                                 <lightning-input-field field-name="General_Accounting_Unit__c" variant="label-stacked"></lightning-input-field>
                                             </lightning-layout-item>
                                             <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
-                                                <lightning-input-field field-name="Amount__c" variant="label-stacked"></lightning-input-field>
+                                                <lightning-input-field class="amount-field" field-name="Amount__c" variant="label-stacked" onchange={handleAmountChange}></lightning-input-field>
                                             </lightning-layout-item>
-                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_1-of-12">
                                                 <lightning-button 
                                                     class="slds-var-p-horizontal_medium" 
                                                     variant="brand" 
@@ -99,7 +119,7 @@
                                                     label="Update" 
                                                 ></lightning-button>
                                             </lightning-layout-item>
-                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
+                                            <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_1-of-12">
                                                 <lightning-button 
                                                     class="slds-var-p-horizontal_medium" 
                                                     variant="destructive" 
@@ -133,13 +153,13 @@
                                         <lightning-messages> </lightning-messages>
                                         <lightning-layout vertical-align="center">
                                             <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
-                                                <lightning-input-field field-name="Future_Allocation_Set__c" value={allocationSetId} variant="label-stacked"></lightning-input-field>
+                                                <lightning-input-field field-name="Future_Allocation_Set__c" value={allocationSet.Id} variant="label-stacked" disabled></lightning-input-field>
                                             </lightning-layout-item>
                                             <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_4-of-12">
                                                 <lightning-input-field field-name="General_Accounting_Unit__c" variant="label-stacked"></lightning-input-field>
                                             </lightning-layout-item>
                                             <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_2-of-12">
-                                                <lightning-input-field field-name="Amount__c" variant="label-stacked"></lightning-input-field>
+                                                <lightning-input-field class="amount-field" field-name="Amount__c" variant="label-stacked" onchange={handleAmountChange}></lightning-input-field>
                                             </lightning-layout-item>
                                             <lightning-layout-item flexibility="auto" padding="around-small" class="slds-size_1-of-12">
                                                 <lightning-button 

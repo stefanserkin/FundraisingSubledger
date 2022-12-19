@@ -11,10 +11,25 @@ import PERCENT_FIELD from '@salesforce/schema/Future_Allocation__c.Percent__c';
 
 export default class FslFutureAllocationEditor extends LightningElement {
     @api opportunityId;
-    @api allocationSetId;
-    @api allocationSetDate;
     @api futureAllocations;
     @track newFutureAllocations = [];
+    passedAllocationSet;
+    allocationDate;
+    totalOpportunityAmount = 0;
+    totalAllocated = 0;
+
+    @api
+    get allocationSet() {
+        return this.passedAllocationSet;
+    }
+    set allocationSet(value) {
+        this.totalAllocated = value.totalAllocated != null ? value.totalAllocated : 0;
+        this.totalOpportunityAmount = value.Opportunity__r.Amount != null ? value.Opportunity__r.Amount : 0;
+        this.allocationDate = value.Effective_Date__c != null ? value.Effective_Date__c : null;
+        this.passedAllocationSet = value;
+    }
+
+    modalHeader = 'Manage Future Allocations';
 
     isLoading = false;
     error;
@@ -24,11 +39,26 @@ export default class FslFutureAllocationEditor extends LightningElement {
     futureAllocationObj = FUTURE_ALLOCATION_OBJECT;
     fields = [GAU_FIELD, FUTURE_SET_FIELD, AMOUNT_FIELD, PERCENT_FIELD];
 
+    get allocationSetDateFormatted() {
+        const dateOptions = {
+            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: 'UTC'
+        };
+        let dt = new Date( this.allocationDate );
+        let formattedDate = new Intl.DateTimeFormat('en-US', dateOptions).format(dt);
+        return formattedDate;
+    }
+
+    get totalAllocatedClass() {
+        return this.totalAllocated > this.totalOpportunityAmount 
+            ? 'slds-text-color_destructive' 
+            : 'slds-text-color_default';
+    }
+
     handleCloseEvent() {
         this.dispatchEvent(new CustomEvent('close'));
     }
 
-    handleRefreshApex() {
+    handleRefreshData() {
         this.dispatchEvent(new CustomEvent('refresh'));
     }
 
@@ -37,16 +67,32 @@ export default class FslFutureAllocationEditor extends LightningElement {
     }
 
     handleDateChange(event) {
-        this.allocationSetDate = event.target.value;
+        console.log(event.target.value);
+        this.allocationDate = event.target.value;
+        console.log(this.allocationDate);
     }
 
-    handleUpdateDate() {
-        console.log(this.allocationSetDate);
-        alert(`Updated date to ${this.allocationSetDate}! Just kidding. TODO`);
+    handleAmountChange(event) {
+        let total = 0;
+        this.template.querySelectorAll("lightning-input-field.amount-field").forEach(field => {
+            total += field.value != null ? Number(field.value) : 0;
+        });
+        this.totalAllocated = total;
+    }
+
+    handleUpdateDateSuccess(event) {
+        this.dispatchEvent(
+            new ShowToastEvent({
+                title: 'Success',
+                message: 'The future allocation set date was updated',
+                variant: 'success'
+            })
+        );
+        this.handleRefreshData();
+        this.handleEditDateToggle();
     }
 
     handleUpdateAllocationSuccess(event) {
-        console.log('::: handle success for ' + event.detail.id);
         this.dispatchEvent(
             new ShowToastEvent({
                 title: 'Success',
@@ -54,11 +100,10 @@ export default class FslFutureAllocationEditor extends LightningElement {
                 variant: 'success'
             })
         );
-        this.handleRefreshApex();
+        this.handleRefreshData();
     }
 
     handleNewAllocationSuccess(event) {
-        console.log('::: handle success for ' + event.detail.id);
         this.dispatchEvent(
             new ShowToastEvent({
                 title: 'Success',
@@ -66,22 +111,10 @@ export default class FslFutureAllocationEditor extends LightningElement {
                 variant: 'success'
             })
         );
-        this.handleRefreshApex();
-    }
-
-    handleUpdateDateSuccess(event) {
-        this.dispatchEvent(
-            new ShowToastEvent({
-                title: 'Success',
-                message: 'Date has been updated',
-                variant: 'success'
-            })
-        );
-        this.handleRefreshApex();
+        this.handleRefreshData();
     }
 
     async handleDeleteRow(event) {
-        console.log('::::: handleDeleteRow with record id: ' + event.target.dataset.recordId);
         const allocId = event.target.dataset.recordId;
 
         const result = await LightningConfirm.open({
@@ -102,7 +135,7 @@ export default class FslFutureAllocationEditor extends LightningElement {
                             variant: 'success'
                         })
                     );
-                    this.handleRefreshApex();
+                    this.handleRefreshData();
                     this.isLoading = false;
                 })
                 .catch(error => {
@@ -122,15 +155,13 @@ export default class FslFutureAllocationEditor extends LightningElement {
     handleNewRow() {
         let newAlloc = { 
             'sobjectType': 'Future_Allocation__c', 
-            'Future_Allocation_Set__c': this.allocationSetId, 
+            'Future_Allocation_Set__c': this.allocationSet.Id, 
             'General_Accounting_Unit__c': null, 
             'Amount__c': 0
         };
-        console.log(newAlloc);
         let newArray = this.newFutureAllocations;
         newArray.push(newAlloc);
         this.newFutureAllocations = newArray;
-        console.table(this.newFutureAllocations);
     }
 
     handleCancelNewRow(event) {
@@ -139,6 +170,7 @@ export default class FslFutureAllocationEditor extends LightningElement {
         console.table(this.newFutureAllocations);
         // WHY DOESN'T THIS WORK? I DON'T THINK IT'S FINDING THE ITEM AT ALL
         // BUT STILL REMOVES THE LAST ITEM IN THE ARRAY
+        // JOOOOOOOOOOOOONNNNNNNNNNNNNNNNNNNNNN HELP
         this.newFutureAllocations.splice(index, 1);
         console.table(this.newFutureAllocations);
     }

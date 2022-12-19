@@ -2,6 +2,8 @@ import { LightningElement, api, wire, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import { createRecord } from 'lightning/uiRecordApi';
+import { deleteRecord } from 'lightning/uiRecordApi';
+import LightningConfirm from 'lightning/confirm';
 import getFutureAllocationSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.getFutureAllocationSets';
 
 import { loadStyle } from 'lightning/platformResourceLoader';
@@ -48,8 +50,7 @@ export default class FslFutureAllocationManager extends LightningElement {
     activeSectionsMessage = '';
 
     showModal = false;
-    selectedSetId;
-    selectedSetDate;
+    selectedSet;
     selectedSetAllocations = [];
 
     isAddingFutureSet = false;
@@ -78,14 +79,51 @@ export default class FslFutureAllocationManager extends LightningElement {
 
     handleMenuSelect(event) {
         const menuAction = event.detail.value;
-        this.selectedSetId = event.currentTarget.dataset.recordId;
-        let selectedSet = this.futureAllocationSets.find(selSet => selSet.Id === this.selectedSetId);
-        this.selectedSetDate = selectedSet.Effective_Date__c;
-        this.selectedSetAllocations = selectedSet.Future_Allocations__r;
+        let selectedSetId = event.currentTarget.dataset.recordId;
+        this.selectedSet = this.futureAllocationSets.find(selSet => selSet.Id === selectedSetId);
+        this.selectedSetAllocations = this.selectedSet.Future_Allocations__r;
         if (menuAction === 'edit') {
             this.showModal = true;
         } else if (menuAction === 'delete') {
-            alert('TODO - use lightning confirm and delete set with all child allocations');
+            this.deleteFutureAllocationSet(selectedSetId);
+        }
+    }
+
+    async deleteFutureAllocationSet(id) {
+        console.log(':::: attempting to delete record: ' + id);
+
+        const result = await LightningConfirm.open({
+            message: 'Click confirm to delete this future allocation set',
+            variant: 'header',
+            label: 'Are You Sure?',
+            theme: 'error',
+        });
+
+        if (result) {
+            this.isLoading = true;
+            deleteRecord(id)
+                .then(() => {
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Success',
+                            message: 'The future allocation set was deleted',
+                            variant: 'success'
+                        })
+                    );
+                    this.handleRefreshData();
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    this.error = error;
+                    this.dispatchEvent(
+                        new ShowToastEvent({
+                            title: 'Error deleting record',
+                            message: error.body.message,
+                            variant: 'error'
+                        })
+                    );
+                    this.isLoading = false;
+                });
         }
     }
 
