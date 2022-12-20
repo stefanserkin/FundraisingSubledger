@@ -142,6 +142,7 @@ public class fsl_TestDataFactory {
      * No DML - returns unsaved list of sObjects
      * @param List<Account> Parent accounts for created contacts
      * @param Integer Number of contacts to create for each account
+     * @return Contact[] New contacts
      */
 
     public static List<Contact> createContacts(
@@ -201,6 +202,33 @@ public class fsl_TestDataFactory {
         );
         return newGroup;
     }
+
+    /***********************************
+     * Opportunities
+     ***********************************/
+
+    /**
+     * Create opportunity sObjects for a list of contacts
+     * No DML - returns unsaved list of sObjects
+     * @param List<Contact> Parent primary contacts for created opps
+     * @param Integer Number of opportunities to create for each contact
+     * @return Opportunity[] List of opportunity sObjects
+     */
+
+     public static List<Opportunity> createOpportunities(
+        List<Contact> lstContacts, 
+        Integer numberOfOpportunities
+     ) {
+        List<Opportunity> lstOpps = new List<Opportunity>();
+        for (Integer i = 0; i < numberOfOpportunities; i++) {
+            lstOpps.add(
+                new Opportunity(
+                    npsp__Primary_Contact__c = lstContacts[0].Id
+                )
+            );
+        }
+        return lstOpps;
+     }
 
 
     /***********************************

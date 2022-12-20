@@ -6,9 +6,6 @@ import { deleteRecord } from 'lightning/uiRecordApi';
 import LightningConfirm from 'lightning/confirm';
 import getFutureAllocationSets from '@salesforce/apex/fsl_FutureAllocationManagerCtrl.getFutureAllocationSets';
 
-import { loadStyle } from 'lightning/platformResourceLoader';
-import modalStyle from '@salesforce/resourceUrl/modalWide';
-
 import FUTURE_SET_OBJECT from '@salesforce/schema/Future_Allocation_Set__c';
 import OPPORTUNITY_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Opportunity__c';
 import DATE_FIELD from '@salesforce/schema/Future_Allocation_Set__c.Effective_Date__c';
@@ -55,13 +52,6 @@ export default class FslFutureAllocationManager extends LightningElement {
 
     isAddingFutureSet = false;
     dateInput;
-
-    // Load wide modal css from static resource
-	connectedCallback() {
-		Promise.all([
-			 loadStyle(this, modalStyle)
-		]);
-	}
 
     get newFutureSetButtonLabel() {
         return this.isAddingFutureSet ? 'Cancel' : 'New Future Allocation Set';
