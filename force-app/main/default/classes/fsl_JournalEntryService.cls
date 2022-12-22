@@ -4,16 +4,6 @@ public without sharing class fsl_JournalEntryService {
      * STATIC VARIABLES
      ******************************************************/
 
-    // Constants - common labels
-    public static final String ACCOUNTING_STATE_UNCOMMITTED = 'Uncommitted';
-    public static final String ACCOUNTING_STATE_COMMITTED = 'Committed';
-    public static final String ACCOUNTING_STATE_FINALIZED = 'Finalized';
-    public static final String RECEIVABLES_ACCOUNT_NAME = 'Pledges_Receivable';
-    public static final String GLOBAL_GL_TYPE_RECEIVABLES = 'Receivables';
-    public static final String GLOBAL_GL_TYPE_PAYMENT = 'Payment';
-    public static final String DEBIT_LABEL = 'Debit';
-    public static final String CREDIT_LABEL = 'Credit';
-
     // Global settings and configuration cache
     private static Fundraising_Subledger_Setting__mdt appSettings = Fundraising_Subledger_Setting__mdt.getAll().values().get(0);
     private static Accounting_Period__c openAccountingPeriod;
@@ -23,6 +13,16 @@ public without sharing class fsl_JournalEntryService {
     private static Global_GL_Account__mdt defaultPaymentAccount;
     private static Map<String, String> mapGLCodeToName;
     private static Set<Id> setUpdatedOppIds;
+
+    // Constants - common labels
+    public static final String ACCOUNTING_STATE_UNCOMMITTED = fsl_Constants.ACCOUNTING_STATE_UNCOMMITTED;
+    public static final String ACCOUNTING_STATE_COMMITTED = fsl_Constants.ACCOUNTING_STATE_COMMITTED;
+    public static final String ACCOUNTING_STATE_FINALIZED = fsl_Constants.ACCOUNTING_STATE_FINALIZED;
+    public static final String RECEIVABLES_ACCOUNT_NAME = fsl_Constants.RECEIVABLES_ACCOUNT_NAME;
+    public static final String GLOBAL_GL_TYPE_RECEIVABLES = fsl_Constants.GLOBAL_GL_TYPE_RECEIVABLES;
+    public static final String GLOBAL_GL_TYPE_PAYMENT = fsl_Constants.GLOBAL_GL_TYPE_PAYMENT;
+    public static final String DEBIT_LABEL = fsl_Constants.DEBIT_LABEL;
+    public static final String CREDIT_LABEL = fsl_Constants.CREDIT_LABEL;
 
     /******************************************************
      * PUBLIC METHODS
@@ -258,7 +258,7 @@ public without sharing class fsl_JournalEntryService {
             if (!mapCurrentNets.containsKey(glCode)) mapCurrentNets.put(glCode, 0);
             Decimal netValue = mapCurrentNets.get(glCode);
             // Assign a positive value to credits, negative to debits
-            netValue += je.Type__c == DEBIT_LABEL ? (je.Amount__c) * -1 : je.Amount__c;
+            netValue += je.Type__c == DEBIT_LABEL ? (je.Amount__c * -1) : je.Amount__c;
             mapCurrentNets.put(glCode, netValue);
             mapGLCodeToName.put(glCode, je.GL_Account_Name__c);
         }

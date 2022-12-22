@@ -47,4 +47,15 @@ public without sharing class fsl_Constants {
     @testVisible
     public static final String ACCOUNTING_JOB_MODE_DATES = 'Dates';
 
+    /******************************
+     * Global GL Accounts
+     ******************************/
+
+    @testVisible 
+    public static final String RECEIVABLES_ACCOUNT_NAME = 'Pledges_Receivable';
+    @testVisible
+    public static final String GLOBAL_GL_TYPE_RECEIVABLES = 'Receivables';
+    @testVisible
+    public static final String GLOBAL_GL_TYPE_PAYMENT = 'Payment';
+
 }
