@@ -15,9 +15,9 @@ public with sharing class TA_AccPeriod_PostEntriesAU implements TriggerAction.Af
             }
         }
 
-        // Update jes for closed periods that have not been 'denied'
+        // Update jes for closed periods that have not been denied
         List<Journal_Entry__c> lstEntriesToUpdate = new List<Journal_Entry__c>();
-        Set<String> setInvalidStatuses = new Set<String>{fsl_Constants.JE_STATUS_POSTED,fsl_Constants.JE_STATUS_DENIED};
+        Set<String> setInvalidStatuses = new Set<String>{fsl_Constants.JE_STATUS_POSTED, fsl_Constants.JE_STATUS_DENIED};
         lstEntriesToUpdate = [
             SELECT Id, Posting_Status__c 
               FROM Journal_Entry__c 
@@ -33,7 +33,7 @@ public with sharing class TA_AccPeriod_PostEntriesAU implements TriggerAction.Af
         if (!lstEntriesToUpdate.isEmpty()) {
             try {
                 update lstEntriesToUpdate;
-            } catch (Exception e) {
+            } catch (DmlException e) {
                 System.debug('::::: An exception occurred: ' + e.getMessage());
             }
         }

@@ -1,5 +1,5 @@
 public with sharing class fsl_FutureAllocationsScheduler implements Schedulable {
-    public static String schedule = '0 12 0 ? * *'; // Every day at 12:12am
+    public static String schedule = '0 58 17 ? * *'; // Every day at 5:58pm
 
     public static String run() {
         fsl_FutureAllocationsScheduler fas = new fsl_FutureAllocationsScheduler();

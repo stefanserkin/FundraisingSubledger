@@ -1,5 +1,7 @@
 public with sharing class fsl_HomePageComponentController {
 
+    
+
     /**
      * All mode
      */
@@ -16,17 +18,10 @@ public with sharing class fsl_HomePageComponentController {
                 runInAllMode();
             }
             else if (mode == fsl_Constants.ACCOUNTING_JOB_MODE_RECORDS) {
-                runInRecordsMode(
-                    mode, 
-                    recordIds
-                );
+                runInRecordsMode(mode, recordIds);
             }
             else if (mode == fsl_Constants.ACCOUNTING_JOB_MODE_DATES) {
-                runInDatesMode(
-                    mode, 
-                    startDate, 
-                    endDate
-                );
+                runInDatesMode(mode, startDate, endDate);
             }
             return 'Success';
         } catch (Exception e) {
@@ -49,7 +44,7 @@ public with sharing class fsl_HomePageComponentController {
         String mode, 
         String recordIds
     ) {
-        if (mode != MODE_RECORDS) throw new AuraHandledException('Incorrect parameters passed for mode');
+        if (mode != fsl_Constants.ACCOUNTING_JOB_MODE_RECORDS) throw new AuraHandledException('Incorrect parameters passed for mode');
         try {
             Set<Id> setOppIds = new Set<Id>();
             Set<String> setStrings = new Set<String>();
@@ -70,7 +65,7 @@ public with sharing class fsl_HomePageComponentController {
         Date startDate, 
         Date endDate
     ) {
-        if (mode != MODE_DATES) throw new AuraHandledException('Incorrect parameters passed for mode');
+        if (mode != fsl_Constants.ACCOUNTING_JOB_MODE_DATES) throw new AuraHandledException('Incorrect parameters passed for mode');
         try {
             List<Opportunity> lstOpps = [
                 SELECT Id 
