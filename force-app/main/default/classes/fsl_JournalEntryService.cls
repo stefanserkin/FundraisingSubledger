@@ -59,7 +59,6 @@ public without sharing class fsl_JournalEntryService {
             for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
                 if (acc.Id == appSettings.Default_Payment_Account__c) {
                     defaultPaymentAccount = acc;
-                    // mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
                     break;
                 }
             }
@@ -77,7 +76,6 @@ public without sharing class fsl_JournalEntryService {
             for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
                 if (acc.Id == appSettings.Default_Receivables_Account__c) {
                     defaultReceivablesAccount = acc;
-                    // mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
                     break;
                 }
             }
@@ -157,8 +155,6 @@ public without sharing class fsl_JournalEntryService {
             // Exit if override is set
             if (opp.Do_Not_Create_Journal_Entries__c) continue;
             
-            // System.debug(':::: payment allocations size: ' + mapWrittenOffPayments.values().get(0).npsp__Allocations__r.size());
-
             // Create map of relevant GLs and expected net
             Map<String, Decimal> mapExpectedNets = getExpectedNetMap(opp);
             Map<String, Decimal> mapCurrentNets = getCurrentNetMap(opp.Journal_Entries__r);
