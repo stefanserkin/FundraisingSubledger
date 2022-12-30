@@ -9,9 +9,11 @@ public without sharing class fsl_JournalEntryService {
     private static Accounting_Period__c openAccountingPeriod;
     private static Map<String, String> mapStageToState;
     private static Map<String, Global_GL_Account__mdt> mapLabelToGlobalAccount;
+    private static Map<String, String> mapGLCodeToName;
+    private static Map<Id, npe01__OppPayment__c> mapWrittenOffPayments; 
     private static Global_GL_Account__mdt defaultReceivablesAccount;
     private static Global_GL_Account__mdt defaultPaymentAccount;
-    private static Map<String, String> mapGLCodeToName;
+    private static Global_GL_Account__mdt defaultWriteOffAccount;
     private static Set<Id> setUpdatedOppIds;
 
     // Constants - common labels
@@ -37,7 +39,7 @@ public without sharing class fsl_JournalEntryService {
     public static void createEntries(
         Set<Id> setOpportunityIds
     ) {
-        // If necessary, initialize cache variables
+        // Initialize cached variables and store default data
         initializeCache();
         // Get opportunities with details
         Map<Id, Opportunity> mapOpportunities = getOppsWithAccountingDetails( setOpportunityIds );
@@ -57,7 +59,7 @@ public without sharing class fsl_JournalEntryService {
             for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
                 if (acc.Id == appSettings.Default_Payment_Account__c) {
                     defaultPaymentAccount = acc;
-                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
+                    // mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
                     break;
                 }
             }
@@ -75,7 +77,7 @@ public without sharing class fsl_JournalEntryService {
             for (Global_GL_Account__mdt acc : getGlobalAccountMap().values()) {
                 if (acc.Id == appSettings.Default_Receivables_Account__c) {
                     defaultReceivablesAccount = acc;
-                    mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
+                    // mapGLCodeToName.put(acc.GL_Code__c, acc.GL_Account_Name__c);
                     break;
                 }
             }
@@ -146,10 +148,16 @@ public without sharing class fsl_JournalEntryService {
     ) {
 
         List<Journal_Entry__c> lstJEsToInsert = new List<Journal_Entry__c>();
+        // Create map of payment ids to payment allocations
+        Map<Id, List<npe01__OppPayment__c>> mapPaymentIdToAllocations = new Map<Id, List<npe01__OppPayment__c>>();
+        // Get map of written off payments
+        loadWrittenOffPaymentMap(mapOpportunities);
 
         for (Opportunity opp : mapOpportunities.values()) {
             // Exit if override is set
             if (opp.Do_Not_Create_Journal_Entries__c) continue;
+            
+            // System.debug(':::: payment allocations size: ' + mapWrittenOffPayments.values().get(0).npsp__Allocations__r.size());
 
             // Create map of relevant GLs and expected net
             Map<String, Decimal> mapExpectedNets = getExpectedNetMap(opp);
@@ -190,6 +198,38 @@ public without sharing class fsl_JournalEntryService {
     }
 
     /***************************
+     * Get map of written off payments and their allocations
+     * @param Map<Id, Opportunity> map of opps with payments, allocs, and jes
+     * @return Map<Id, npe01__OppPayment__c> Map of written off payments with payment allocations
+     ***************************/
+
+    private static void loadWrittenOffPaymentMap(
+        Map<Id, Opportunity> mapOpportunities
+    ) {
+        if (mapWrittenOffPayments == null) {
+            Set<Id> setWrittenOffPaymentIds = new Set<Id>();
+            for (Opportunity opp : mapOpportunities.values()) {
+                for (npe01__OppPayment__c p : opp.npe01__OppPayment__r) {
+                    if (p.npe01__Written_Off__c) setWrittenOffPaymentIds.add(p.Id);
+                }
+            }
+            // If any written off payments are found, get payments with payment allocations
+            if (!setWrittenOffPaymentIds.isEmpty()) {
+                mapWrittenOffPayments = new Map<Id, npe01__OppPayment__c>([
+                    SELECT Id, npe01__Payment_Amount__c, 
+                           (SELECT Id, npsp__Amount__c, npsp__General_Accounting_Unit__c, Write_Off_GL_Code__c 
+                              FROM npsp__Allocations__r)
+                      FROM npe01__OppPayment__c
+                     WHERE Id IN :setWrittenOffPaymentIds
+                     LIMIT 10000
+                ]);
+            } else {
+                mapWrittenOffPayments = new Map<Id, npe01__OppPayment__c>();
+            }
+        }
+    }
+
+    /***************************
      * Get map of expected GL net values
      * @param Opportunity opp Opportunity with child payments and allocations
      * @return Map<String, Decimal> Map of GL codes and expected net totals
@@ -200,24 +240,49 @@ public without sharing class fsl_JournalEntryService {
     ) {
         Map<String, Decimal> mapExpectedNets = new Map<String, Decimal>();
         // Get opp accounting state
-        Map<String, String> mapStageToState = getStageToStateMappings();
+        // Map<String, String> mapStageToState = getStageToStateMappings();
         String strState = getStageToStateMappings().get(opp.StageName);
         // Uncommitted opps should have zero dollars in each account
         // Write off existing attributions for Closed Lost
         if (strState == ACCOUNTING_STATE_UNCOMMITTED) return mapExpectedNets;
         // For committed and finalized opps, calculate expected net per GL
-        //   from payments and allocations
+        // from payments and allocations
         String glCode = '';
         for (npe01__OppPayment__c p : opp.npe01__OppPayment__r) {
-            // Get gl code from map or set the default
-            glCode = p.npe01__Payment_Method__c != null && getGlobalAccountMap().containsKey(p.npe01__Payment_Method__c)
-                ? getGlobalAccountMap().get(p.npe01__Payment_Method__c).GL_Code__c
-                : getDefaultPaymentAccount().GL_Code__c;
-            // Add gl to map
-            if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
-            // Subtract amount of paid GL for payment accounts
-            mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - p.npe01__Payment_Amount__c);
+            if (p.npe01__Written_Off__c) {
+                // Get written off amount
+                Decimal writeOffAmount = p.npe01__Payment_Amount__c;
+                Decimal writtenOffAmount = 0;
+                // Get list of payment allocations from map
+                List<npsp__Allocation__c> lstPaymentAllocations;
+                lstPaymentAllocations = mapWrittenOffPayments.get(p.Id)?.npsp__Allocations__r;
+                // For each payment allocation, calculate net amount to gl
+                for (npsp__Allocation__c alloc : lstPaymentAllocations) {
+                    glCode = alloc.Write_Off_GL_Code__c;
+                    if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
+                    mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - alloc.npsp__Amount__c);
+                    writtenOffAmount += alloc.npsp__Amount__c;
+                }
+                // Write off remaining amount to default gl
+                if (writtenOffAmount < writeOffAmount) {
+                    Decimal delta = writeOffAmount - writtenOffAmount;
+                    glCode = defaultWriteOffAccount.GL_Code__c;
+                    if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
+                    mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - delta);
+                }
+            } else if (p.npe01__Paid__c) {
+                // Get gl code from map or set the default
+                glCode = p.npe01__Payment_Method__c != null && getGlobalAccountMap().containsKey(p.npe01__Payment_Method__c)
+                    ? getGlobalAccountMap().get(p.npe01__Payment_Method__c).GL_Code__c
+                    : getDefaultPaymentAccount().GL_Code__c;
+                // Add gl to map
+                if (!mapExpectedNets.containsKey(glCode)) mapExpectedNets.put(glCode, 0);
+                // Subtract amount of paid GL for payment accounts
+                mapExpectedNets.put(glCode, mapExpectedNets.get(glCode) - p.npe01__Payment_Amount__c);
+            }
+            // Do stock stuff - fees, delta of selling price to received price, gl account to alter with liquidated amount (selling price)
         }
+
         for (npsp__Allocation__c a : opp.npsp__Allocations__r) {
             glCode = a.npsp__General_Accounting_Unit__r.GL_Code__c;
             // Add gl to map
@@ -292,8 +357,8 @@ public without sharing class fsl_JournalEntryService {
     }
 
     /***************************
-     * @param set<Id> set of opportunity ids
-     * @return Opportunity[] Opps with payments and allocations
+     * @param set<Id> Set of opportunity ids
+     * @return Opportunity[] Opps with payments, allocations, and jes
      ***************************/
 
     @testVisible
@@ -302,9 +367,10 @@ public without sharing class fsl_JournalEntryService {
     ) {
         return new Map<Id, Opportunity>([
             SELECT Id, Amount, CloseDate, StageName, AccountId, IsWon, npe01__Amount_Outstanding__c, Do_Not_Create_Journal_Entries__c, 
-                   (SELECT Id, npe01__Payment_Amount__c, npe01__Payment_Method__c, npe01__Paid__c
+                   (SELECT Id, npe01__Payment_Amount__c, npe01__Payment_Method__c, npe01__Paid__c, npe01__Written_Off__c
                       FROM npe01__OppPayment__r
-                     WHERE npe01__Paid__c = true), 
+                     WHERE npe01__Paid__c = true
+                        OR npe01__Written_Off__c = true), 
                    (SELECT Id, npsp__Amount__c, npsp__General_Accounting_Unit__c, npsp__General_Accounting_Unit__r.Name, npsp__General_Accounting_Unit__r.GL_Code__c 
                       FROM npsp__Allocations__r), 
                    (SELECT Id, Amount__c, GL_Code__c, GL_Account_Name__c, Type__c 
@@ -331,6 +397,13 @@ public without sharing class fsl_JournalEntryService {
             for (Global_GL_Account__mdt glAcc : lstAccounts) {
                 mapLabelToGlobalAccount.put(glAcc.Label, glAcc);
                 mapGLCodeToName.put(glAcc.GL_Code__c, glAcc.GL_Account_Name__c);
+                if (glAcc.Id == appSettings.Default_Payment_Account__c) {
+                    defaultPaymentAccount = glAcc;
+                } else if (glAcc.Id == appSettings.Default_Receivables_Account__c) {
+                    defaultReceivablesAccount = glAcc;
+                } else if (glAcc.Id == appSettings.Default_Write_Off_Account__c) {
+                    defaultWriteOffAccount = glAcc;
+                }
             }
         }
         return mapLabelToGlobalAccount;

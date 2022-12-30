@@ -31,14 +31,12 @@ public class TA_JE_QueriesBI {
 
             Set<String> setGlCodes = new Set<String>();
             for (Journal_Entry__c je : newList) setGlCodes.add(je.GL_Code__c);
-
             List<npsp__General_Accounting_Unit__c> lstGaus = [
                 SELECT Id, Name, GL_Code__c
                   FROM npsp__General_Accounting_Unit__c
                  WHERE GL_Code__c IN :setGlCodes
                  LIMIT 10000
             ];
-
             for (npsp__General_Accounting_Unit__c gau : lstGaus) {
                 mapGaus.put(gau.GL_Code__c, gau);
             }

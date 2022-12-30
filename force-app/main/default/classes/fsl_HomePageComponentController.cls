@@ -90,6 +90,8 @@ public with sharing class fsl_HomePageComponentController {
     public static String deleteAllData() {
         try {
             delete [SELECT Id FROM Journal_Entry__c];
+            delete [SELECT Id FROM npsp__Allocation__c];
+            delete [SELECT Id FROM npe01__OppPayment__c];
             delete [SELECT Id FROM Opportunity];
             return 'Success';
         } catch (Exception e) {

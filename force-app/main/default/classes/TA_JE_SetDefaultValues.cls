@@ -15,6 +15,7 @@ public without sharing class TA_JE_SetDefaultValues implements TriggerAction.Bef
         for (Journal_Entry__c je : newList) {
             if (mapGlCodeToGau.containsKey(je.GL_Code__c)) {
                 je.General_Accounting_Unit__c = mapGlCodeToGau.get(je.GL_Code__c).Id;
+                je.GL_Account_Name__c = mapGlCodeToGau.get(je.GL_Code__c).Name;
             }
         }
     }
