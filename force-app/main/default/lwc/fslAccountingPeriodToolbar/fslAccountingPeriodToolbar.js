@@ -40,7 +40,7 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
         return !hasManageAccess;
     }
 
-    noAccessHelpText = 'You lack permission to manage accounting periods. Check with your system administrator.';
+    noAccessHelpText = `Your user does not have permission to manage accounting periods. Check with your system administrator.`;
 
     @wire(getRecord, { 
         recordId: '$recordId', 
@@ -77,7 +77,7 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
     }
 
     get closePeriodWarning() {
-        return `Think very carefully! This action can not be undone. Past this point, nobody can save you. You will likely regret this. Good luck.`;
+        return `Think very carefully! This action can not be undone. Past this point, nobody can save you. You will likely regret this. God help you.`;
     }
 
     get closePeriodModalHeader() {

@@ -131,8 +131,7 @@ public without sharing class fsl_JournalEntryService {
      private static void initializeCache() {
         if (setUpdatedOppIds == null) setUpdatedOppIds = new Set<Id>();
         if (mapGLCodeToName == null) mapGLCodeToName = new Map<String, String>();
-        defaultPaymentAccount = getDefaultPaymentAccount();
-        defaultReceivablesAccount = getDefaultReceivablesAccount();
+        getGlobalAccountMap();
     }
 
     /***************************

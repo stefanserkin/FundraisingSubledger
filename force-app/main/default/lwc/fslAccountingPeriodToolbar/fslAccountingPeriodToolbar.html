@@ -15,7 +15,8 @@
                 <!-- BUTTON MENU -->
                 <lightning-button-group>
                     <!-- CLOSE ACCOUNTING PERIOD -->
-                    <lightning-button if:false={isClosed} 
+                    <lightning-button 
+                        if:false={isClosed} 
                         label={closePeriodLabel} 
                         title={closePeriodLabel} 
                         icon-name="utility:lock" 
@@ -24,7 +25,8 @@
                     ></lightning-button>
 
                     <!-- REOPEN ACCOUNTING PERIOD -->
-                    <lightning-button if:true={isClosed} 
+                    <lightning-button 
+                        if:true={isClosed} 
                         label={reopenPeriodLabel} 
                         title={reopenPeriodLabel} 
                         icon-name="utility:redo" 
@@ -42,7 +44,11 @@
                     ></lightning-button>
 
                     <!-- HELP FOR USERS WITHOUT ACCESS -->
-                    <lightning-helptext if:true={isToolbarDisabled} content={noAccessHelpText}></lightning-helptext>
+                    <lightning-helptext 
+                        if:true={isToolbarDisabled} 
+                        content={noAccessHelpText} 
+                        class="slds-var-p-left_x-small"
+                    ></lightning-helptext>
                 </lightning-button-group>
             </lightning-layout-item>
         </lightning-layout>
