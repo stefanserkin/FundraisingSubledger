@@ -16,6 +16,10 @@ import APPROVED_BY_FIELD from '@salesforce/schema/Accounting_Period__c.Approved_
 import USER_ID from '@salesforce/user/Id';
 import hasManageAccess from '@salesforce/customPermission/fsl_Manage_Accounting_Periods';
 
+import CloseWarningLabel from '@salesforce/label/c.fsl_Accounting_Period_Close_Warning';
+import ReopenWarningLabel from '@salesforce/label/c.fsl_Accounting_Period_Reopen_Warning';
+import NoAccessHelpText from '@salesforce/label/c.fsl_Accounting_Period_No_Access_Help_Text';
+
 export default class FslAccountingPeriodToolbar extends LightningElement {
     @api recordId;
     error;
@@ -38,6 +42,12 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
     get isToolbarDisabled() {
         return !hasManageAccess;
     }
+
+    labels = {
+        CloseWarningLabel, 
+        ReopenWarningLabel, 
+        NoAccessHelpText
+    };
 
     noAccessHelpText = `Your user does not have permission to manage accounting periods. Check with your system administrator.`;
 
@@ -75,28 +85,18 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
         return this.currentStatus === 'Closed';
     }
 
-    get closePeriodWarning() {
-        return `Think very carefully! This action can not be undone. Past this point, nobody can save you. You will likely regret this. God help you.`;
-    }
-
     get closePeriodModalHeader() {
         return `Close ${this.accountingPeriodName}`;
     }
 
-    get reopenPeriodWarning() {
-        return `Are you sure you would like to reopen the ${this.accountingPeriodName} accounting period? This will allow new journal entries to be entered. All posted journal entries for the period will remain posted.`;
-    }
-
     async handleClosePeriod() {
-        console.log(':::: toolbar disabled: ' + this.isToolbarDisabled);
         const result = await CloseModal.open({
             size: 'small', 
             description: 'Close accounting period', 
             header: this.closePeriodModalHeader, 
-            content: this.closePeriodWarning
+            content: this.labels.CloseWarningLabel
         });
         if (result.isconfirm) {
-            console.log(':::: result: ' + result);
             this.postDate = result.postdate;
             this.doClosePeriod();
         }
@@ -125,7 +125,6 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                         variant: 'success'
                     })
                 );
-                this.handleToggleModal();
                 this.isLoading = false;
             })
             .catch(error => {
@@ -136,14 +135,13 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                         variant: 'error'
                     })
                 );
-                this.handleToggleModal();
                 this.isLoading = false;
             });
     }
 
     async handleReopenPeriod() {
         const userConfirmed = await LightningConfirm.open({
-            message: this.reopenPeriodWarning,
+            message: this.labels.ReopenWarningLabel,
             variant: 'header',
             label: `Reopen ${this.accountingPeriodName}`,
             theme: 'alt-inverse'
