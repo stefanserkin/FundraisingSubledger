@@ -1,0 +1,9 @@
+.warning-modal-header {
+    --slds-c-modal-header-color-background: #880808;
+    --slds-c-modal-header-text-color: #ffffff;
+}
+
+.slds-modal__content {
+    overflow: visible;
+    overflow-y: visible;
+}

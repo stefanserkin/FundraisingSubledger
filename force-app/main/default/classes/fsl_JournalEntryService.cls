@@ -250,8 +250,10 @@ public without sharing class fsl_JournalEntryService {
                 Decimal writeOffAmount = p.npe01__Payment_Amount__c;
                 Decimal writtenOffAmount = 0;
                 // Get list of payment allocations from map
-                List<npsp__Allocation__c> lstPaymentAllocations;
-                lstPaymentAllocations = mapWrittenOffPayments.get(p.Id)?.npsp__Allocations__r;
+                List<npsp__Allocation__c> lstPaymentAllocations = new List<npsp__Allocation__c>();
+                if (mapWrittenOffPayments.containsKey(p.Id)) {
+                    lstPaymentAllocations.addAll(mapWrittenOffPayments.get(p.Id).npsp__Allocations__r);
+                }
                 // For each payment allocation, calculate net amount to gl
                 for (npsp__Allocation__c alloc : lstPaymentAllocations) {
                     glCode = alloc.Write_Off_GL_Code__c;

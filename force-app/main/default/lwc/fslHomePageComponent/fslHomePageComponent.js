@@ -122,7 +122,7 @@ export default class FslHomePageComponent extends LightningElement {
             message: 'Are you sure you want to reset all data? All opportunities, payments, allocations, and journal entries will be deleted',
             variant: 'header',
             label: 'Please Confirm',
-            theme: 'error',
+            theme: 'inverse',
         });
 
         this.isLoading = true;

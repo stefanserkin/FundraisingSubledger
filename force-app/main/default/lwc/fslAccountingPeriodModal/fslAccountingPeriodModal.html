@@ -1,0 +1,25 @@
+<template>
+    <lightning-modal-header label={header} class="warning-modal-header"></lightning-modal-header>
+    <lightning-modal-body>
+        <div class="slds-var-m-around_medium">
+            {content}
+        </div>
+        <div class="slds-grid slds-var-m-around_medium">
+            <div class="slds-col slds-size_1-of-3"></div>
+            <div class="slds-col slds-size_1-of-3">
+                <lightning-input type="date" 
+                    name="postDate" 
+                    label="Post Date" 
+                    value={postDate}
+                    onchange={handlePostDateChange} 
+                    required
+                ></lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-3"></div>
+        </div>
+    </lightning-modal-body>
+    <lightning-modal-footer>
+        <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>&nbsp;
+        <lightning-button variant="brand" label="Post" icon-name="utility:lock" onclick={handleConfirm}></lightning-button>
+    </lightning-modal-footer>
+</template>

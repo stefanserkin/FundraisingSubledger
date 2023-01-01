@@ -19,7 +19,7 @@ public with sharing class TA_AccPeriod_PostEntriesAU implements TriggerAction.Af
         List<Journal_Entry__c> lstEntriesToUpdate = new List<Journal_Entry__c>();
         Set<String> setInvalidStatuses = new Set<String>{fsl_Constants.JE_STATUS_POSTED, fsl_Constants.JE_STATUS_DENIED};
         lstEntriesToUpdate = [
-            SELECT Id, Posting_Status__c 
+            SELECT Id, Posting_Status__c, Post_Date__c, Accounting_Period__r.Last_Post_Date__c 
               FROM Journal_Entry__c 
              WHERE Accounting_Period__c IN :setPeriodIds 
                AND Posting_Status__c NOT IN :setInvalidStatuses
@@ -28,6 +28,9 @@ public with sharing class TA_AccPeriod_PostEntriesAU implements TriggerAction.Af
 
         for (Journal_Entry__c je : lstEntriesToUpdate) {
             je.Posting_Status__c = fsl_Constants.JE_STATUS_POSTED;
+            je.Post_Date__c = je.Accounting_Period__r.Last_Post_Date__c != null 
+                ? je.Accounting_Period__r.Last_Post_Date__c
+                : Date.today();
         }
 
         if (!lstEntriesToUpdate.isEmpty()) {

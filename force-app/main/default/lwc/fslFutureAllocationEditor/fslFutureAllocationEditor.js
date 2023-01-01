@@ -168,9 +168,7 @@ export default class FslFutureAllocationEditor extends LightningElement {
         let index = event.target.dataset.index;
         console.log('index ' + index);
         console.table(this.newFutureAllocations);
-        // WHY DOESN'T THIS WORK? I DON'T THINK IT'S FINDING THE ITEM AT ALL
-        // BUT STILL REMOVES THE LAST ITEM IN THE ARRAY
-        // JOOOOOOOOOOOOONNNNNNNNNNNNNNNNNNNNNN HELP
+        // Err.. still not working
         this.newFutureAllocations.splice(index, 1);
         console.table(this.newFutureAllocations);
     }
