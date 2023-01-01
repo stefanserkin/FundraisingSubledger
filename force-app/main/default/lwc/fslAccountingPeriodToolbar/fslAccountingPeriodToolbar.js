@@ -3,6 +3,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { getRecord } from 'lightning/uiRecordApi';
 import { updateRecord } from 'lightning/uiRecordApi';
 import CloseModal from 'c/fslAccountingPeriodModal';
+import AdjustmentModal from 'c/fslManualAdjustmentModal';
 import LightningConfirm from 'lightning/confirm';
 import unpostEntries from '@salesforce/apex/fsl_AccountingPeriodToolbarCtrl.unpostEntries';
 
@@ -18,7 +19,7 @@ import hasManageAccess from '@salesforce/customPermission/fsl_Manage_Accounting_
 
 import CloseWarningLabel from '@salesforce/label/c.fsl_Accounting_Period_Close_Warning';
 import ReopenWarningLabel from '@salesforce/label/c.fsl_Accounting_Period_Reopen_Warning';
-import NoAccessHelpText from '@salesforce/label/c.fsl_Accounting_Period_No_Access_Help_Text';
+import NoAccessHelpTextLabel from '@salesforce/label/c.fsl_Accounting_Period_No_Access_Help_Text';
 
 export default class FslAccountingPeriodToolbar extends LightningElement {
     @api recordId;
@@ -29,15 +30,18 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
 
     @track postDate;
 
-    closePeriodLabel = 'Post Accounting Period';
-    reopenPeriodLabel = 'Reopen Accounting Period';
-
+    // Data returned by getRecord
     accountingPeriod;
     accountingPeriodName = '';
     currentStatus = '';
     lastPostDate;
     approvalStatus;
     approvedById;
+
+    // Labels
+    closePeriodLabel = 'Post Accounting Period';
+    reopenPeriodLabel = 'Reopen Accounting Period';
+    manualAdjustmentLabel = 'Manual Adjustment';
 
     get isToolbarDisabled() {
         return !hasManageAccess;
@@ -46,10 +50,8 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
     labels = {
         CloseWarningLabel, 
         ReopenWarningLabel, 
-        NoAccessHelpText
+        NoAccessHelpTextLabel
     };
-
-    noAccessHelpText = `Your user does not have permission to manage accounting periods. Check with your system administrator.`;
 
     @wire(getRecord, { 
         recordId: '$recordId', 
@@ -89,6 +91,9 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
         return `Close ${this.accountingPeriodName}`;
     }
 
+    /**
+     * Open modal to force confirmation and collect close date
+     */
     async handleClosePeriod() {
         const result = await CloseModal.open({
             size: 'small', 
@@ -102,6 +107,9 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
         }
     }
 
+    /**
+     * Update accounting period status to closed
+     */
     doClosePeriod() {
         this.isLoading = true;
 
@@ -139,6 +147,9 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
             });
     }
 
+    /**
+     * Reopen a closed period
+     */
     async handleReopenPeriod() {
         const userConfirmed = await LightningConfirm.open({
             message: this.labels.ReopenWarningLabel,
@@ -182,6 +193,39 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
             });
     }
 
+    /**
+     * Manual adjustment
+     * @returns void
+     */
+    async handleManualAdjustment() {
+        const result = await AdjustmentModal.open({
+            size: 'small', 
+            description: 'Manual Adjustment', 
+            accountingPeriodId: this.recordId
+        });
+        if (result === 'Success') {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Success',
+                    message: 'The adjustment journal entries were successully created',
+                    variant: 'success'
+                })
+            );
+        } else {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Could not create entries',
+                    message: 'There was an error inserting journal entries: ' + result,
+                    variant: 'error'
+                })
+            );
+        }
+    }
+
+    /**
+     * Unpost entries
+     * @returns void
+     */
     async handleUnpostEntries() {
         const userConfirmed = await LightningConfirm.open({
             message: `All journal entries for the ${this.accountingPeriodName} period will be unposted`, 
@@ -194,8 +238,7 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
 
         this.isLoading = true;
         unpostEntries({recordId: this.recordId})
-            .then(result => {
-                console.log(result);
+            .then(() => {
                 this.dispatchEvent(
                     new ShowToastEvent({
                         title: 'Success',

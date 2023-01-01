@@ -1,17 +1,16 @@
 <template>
     <template if:true={accountingPeriod}>
 
-        <!-- SPINNER ON LOAD -->
-        <div if:true={isLoading} class="slds-is-relative slds-var-m-around_large" >
-            <lightning-spinner 
-                alternative-text="Loading..." 
-                variant="brand" 
-                size="medium"
-            ></lightning-spinner>
-        </div>
-
         <lightning-layout>
             <lightning-layout-item class="button-bar" padding="around-small" size="12">
+                <!-- SPINNER ON LOAD -->
+                <div if:true={isLoading} class="slds-is-relative" >
+                    <lightning-spinner 
+                        alternative-text="Loading..." 
+                        variant="brand" 
+                        size="medium"
+                    ></lightning-spinner>
+                </div>
                 <!-- BUTTON MENU -->
                 <lightning-button-group>
                     <!-- CLOSE ACCOUNTING PERIOD -->
@@ -19,7 +18,7 @@
                         if:false={isClosed} 
                         label={closePeriodLabel} 
                         title={closePeriodLabel} 
-                        icon-name="utility:lock" 
+                        icon-name="action:submit_for_approval" 
                         disabled={isToolbarDisabled} 
                         onclick={handleClosePeriod}
                     ></lightning-button>
@@ -29,9 +28,19 @@
                         if:true={isClosed} 
                         label={reopenPeriodLabel} 
                         title={reopenPeriodLabel} 
-                        icon-name="utility:redo" 
+                        icon-name="action:password_unlock" 
                         disabled={isToolbarDisabled} 
                         onclick={handleReopenPeriod}
+                    ></lightning-button>
+
+                    <!-- MANUAL ADJUSTMENT -->
+                    <lightning-button 
+                        if:false={isClosed} 
+                        label={manualAdjustmentLabel} 
+                        title={manualAdjustmentLabel} 
+                        icon-name="action:adjust_value" 
+                        disabled={isToolbarDisabled} 
+                        onclick={handleManualAdjustment}
                     ></lightning-button>
 
                     <!-- TEST ONLY - REOPEN POSTED ENTRIES -->
@@ -46,7 +55,7 @@
                     <!-- HELP FOR USERS WITHOUT ACCESS -->
                     <lightning-helptext 
                         if:true={isToolbarDisabled} 
-                        content={labels.NoAccessHelpText} 
+                        content={labels.NoAccessHelpTextLabel} 
                         class="slds-var-p-left_x-small"
                     ></lightning-helptext>
                 </lightning-button-group>

@@ -1,0 +1,83 @@
+<template>
+    <lightning-modal-header label={header} class="modal-header-style"></lightning-modal-header>
+
+    <lightning-modal-body>
+        <!-- SPINNER ON LOAD -->
+        <div if:true={isLoading} class="slds-is-relative" >
+            <lightning-spinner 
+                alternative-text="Loading..." 
+                variant="brand" 
+                size="medium"
+            ></lightning-spinner>
+        </div>
+        <div class="slds-var-m-around_medium">
+            {manualAdjustmentInstructions}
+        </div>
+        <div class="slds-grid slds-wrap">
+
+            <!-- ROW 1 -->
+            <div class="slds-col slds-size_1-of-2">
+                <lightning-combobox
+                    name="jeDebitAccount" 
+                    label="Account to Debit" 
+                    value={jeDebitAccount} 
+                    placeholder="Select Account" 
+                    options={accountOptions} 
+                    onchange={handleDebitAccountChange} 
+                    required
+                ></lightning-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-var-p-left_medium">
+                <lightning-combobox
+                    name="jeCreditAccount" 
+                    label="Account to Credit" 
+                    value={jeCreditAccount} 
+                    placeholder="Select Account" 
+                    options={accountOptions} 
+                    onchange={handleCreditAccountChange} 
+                    required
+                ></lightning-combobox>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="slds-col slds-size_1-of-2 slds-var-p-top_small">
+                <lightning-input type="date" 
+                    name="jeDate" 
+                    label="Journal Entry Date" 
+                    value={jeDate}
+                    onchange={handleDateChange} 
+                    required
+                ></lightning-input>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-var-p-top_small slds-var-p-left_medium">
+                <lightning-input type="number" 
+                    name="jeAmount" 
+                    label="Amount" 
+                    value={jeAmount}
+                    formatter="currency" 
+                    step="0.01" 
+                    onchange={handleAmountChange} 
+                    required
+                ></lightning-input>
+            </div>
+
+            <!-- ROW 3 -->
+            <div class="slds-col slds-size_2-of-2 slds-var-p-top_small">
+                <lightning-input type="text" 
+                    label="Description" 
+                    placeholder="The reason for the manual adjustment..." 
+                    minlength="10" 
+                    onchange={handleDescriptionChange} 
+                    required
+                ></lightning-input>
+            </div>
+
+        </div>
+    </lightning-modal-body>
+
+    <lightning-modal-footer>
+        <lightning-button label="Cancel" onclick={handleCancel}></lightning-button>&nbsp;
+        <lightning-button variant="brand" label="Save" icon-name="utility:save" onclick={handleSave}></lightning-button>
+    </lightning-modal-footer>
+
+</template>
