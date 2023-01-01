@@ -20,7 +20,6 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
     @api recordId;
     error;
     isLoading = false;
-    showModal = false;
 
     userId = USER_ID;
 
@@ -140,10 +139,6 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                 this.handleToggleModal();
                 this.isLoading = false;
             });
-    }
-
-    handleToggleModal() {
-        this.showModal = !this.showModal;
     }
 
     async handleReopenPeriod() {
