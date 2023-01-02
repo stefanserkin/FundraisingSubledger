@@ -133,6 +133,7 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                         variant: 'success'
                     })
                 );
+                eval("$A.get('e.force:refreshView').fire();");
                 this.isLoading = false;
             })
             .catch(error => {
@@ -211,7 +212,8 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                     variant: 'success'
                 })
             );
-        } else {
+            eval("$A.get('e.force:refreshView').fire();");
+        } else if (result != undefined && result != 'Cancel') {
             this.dispatchEvent(
                 new ShowToastEvent({
                     title: 'Could not create entries',
@@ -246,6 +248,7 @@ export default class FslAccountingPeriodToolbar extends LightningElement {
                         variant: 'success'
                     })
                 );
+                eval("$A.get('e.force:refreshView').fire();");
                 this.isLoading = false;
             })
             .catch(error => {

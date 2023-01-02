@@ -19,11 +19,18 @@ export default class FslManualAdjustmentModal extends LightningModal {
     @track accountOptions = [];
 
     // Journal entry adjustment information
-    jeDate = new Date().toISOString().slice(0, 10);
+    jeDate = this.getDefaultDate();
     jeAmount = 0;
     jeDebitAccountId;
     jeCreditAccountId;
     jeNotes = '';
+
+    getDefaultDate() {
+        let effectiveDate = new Date();
+        const offset = effectiveDate.getTimezoneOffset();
+        effectiveDate = new Date(effectiveDate.getTime() - (offset*60*1000));
+        return effectiveDate.toISOString().split('T')[0];
+    }
 
     /**
      * Wire array of objects with gl id, name, and code
@@ -38,6 +45,7 @@ export default class FslManualAdjustmentModal extends LightningModal {
             let options = [];
 
             let rows = JSON.parse( JSON.stringify(result.data) );
+
             rows.forEach(row => {
                 options.push({ label: row.label, value: row.id });
             });

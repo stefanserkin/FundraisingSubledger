@@ -16,30 +16,6 @@
         <div class="slds-grid slds-wrap">
 
             <!-- ROW 1 -->
-            <div class="slds-col slds-size_1-of-2">
-                <lightning-combobox
-                    name="jeDebitAccount" 
-                    label="Account to Debit" 
-                    value={jeDebitAccount} 
-                    placeholder="Select Account" 
-                    options={accountOptions} 
-                    onchange={handleDebitAccountChange} 
-                    required
-                ></lightning-combobox>
-            </div>
-            <div class="slds-col slds-size_1-of-2 slds-var-p-left_medium">
-                <lightning-combobox
-                    name="jeCreditAccount" 
-                    label="Account to Credit" 
-                    value={jeCreditAccount} 
-                    placeholder="Select Account" 
-                    options={accountOptions} 
-                    onchange={handleCreditAccountChange} 
-                    required
-                ></lightning-combobox>
-            </div>
-
-            <!-- ROW 2 -->
             <div class="slds-col slds-size_1-of-2 slds-var-p-top_small">
                 <lightning-input type="date" 
                     name="jeDate" 
@@ -59,6 +35,26 @@
                     onchange={handleAmountChange} 
                     required
                 ></lightning-input>
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="slds-col slds-size_1-of-2 slds-var-p-top_small">
+                <c-fsl-combobox 
+                    label="Account to Debit" 
+                    options={accountOptions} 
+                    placeholder="Select an Account" 
+                    onselectoption={handleDebitAccountChange} 
+                    required="true"
+                ></c-fsl-combobox>
+            </div>
+            <div class="slds-col slds-size_1-of-2 slds-var-p-top_small slds-var-p-left_medium">
+                <c-fsl-combobox 
+                    label="Account to Credit" 
+                    options={accountOptions} 
+                    placeholder="Select an Account" 
+                    onselectoption={handleCreditAccountChange} 
+                    required="true"
+                ></c-fsl-combobox>
             </div>
 
             <!-- ROW 3 -->

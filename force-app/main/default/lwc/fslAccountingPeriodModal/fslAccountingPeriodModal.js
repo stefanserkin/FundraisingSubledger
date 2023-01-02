@@ -5,7 +5,14 @@ import LightningModal from 'lightning/modal';
 export default class FslAccountingPeriodModal extends LightningModal {
     @api header;
     @api content;
-    @api postDate = new Date().toISOString().slice(0, 10);
+    @api postDate = this.getDefaultDate();
+
+    getDefaultDate() {
+        let effectiveDate = new Date();
+        const offset = effectiveDate.getTimezoneOffset();
+        effectiveDate = new Date(effectiveDate.getTime() - (offset*60*1000));
+        return effectiveDate.toISOString().split('T')[0];
+    }
 
     handlePostDateChange(event) {
         this.postDate = event.target.value;
