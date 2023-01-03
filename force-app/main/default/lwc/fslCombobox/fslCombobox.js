@@ -7,7 +7,6 @@ export default class FslCombobox extends LightningElement {
     @api placeholder;
     @api value;
     @api options;
-    @api required;
     
     @track isFocussed = false;
     @track isOpen = false;
@@ -73,10 +72,10 @@ export default class FslCombobox extends LightningElement {
 
         if ((!this.isFocussed) && (this.isOpen)) { 
 
-            //Fetch the dropdown DOM node
+            // Fetch the dropdown DOM node
             let domElement = this.template.querySelector('div[data-id="resultBox"]');
 
-            //Is the clicked element within the dropdown 
+            // Is the clicked element within the dropdown 
             if (domElement && !domElement.contains(event.target)) {
                 this.isOpen = false;
             }

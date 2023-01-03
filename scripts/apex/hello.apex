@@ -8,3 +8,10 @@
 // Schedule accounting job
 // fsl_AccountingJobScheduler.run();
 // fsl_FutureAllocationsScheduler.run();
+
+Contact ct = new Contact();
+ct.FirstName = 'Johan';
+ct.LastName = 'Santana';
+ct.Email = 'johanono@yahoo.com';
+ct.Phone = '646-701-2012';
+insert ct;
